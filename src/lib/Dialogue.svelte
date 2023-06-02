@@ -1,24 +1,88 @@
-<script lang="ts" context='module'>
+<script lang="ts" context="module">
 	let title = '',
 		desc = '';
 
-	import {dialogueOpen, dialogueValue} from './dialogueStore';
+	let result: Promise<boolean>;
+	let resultYes: Promise<boolean>;
+	let resultNo: Promise<boolean>;
 
-	export function setDialogue(dTitle: string, dDesc: string){
+	let buttonNo;
+
+	import { dialogueOpen, dialogueValue } from '$lib/dialogueStore';
+
+	export function setDialogue(dTitle: string, dDesc: string) {
 		title = dTitle;
 		desc = dDesc;
 	}
 
-	function cancelHandler(){
+	function cancelHandler() {
 		dialogueValue.set(false);
 		dialogueOpen.set(false);
+		resultYes = new Promise((resolve) => {
+			resolve(true);
+		});
+		// console.log('handleClick-result: ' + result);
 	}
 
-	function confirmHandler(){
+	function confirmHandler() {
 		dialogueValue.set(true);
 		dialogueOpen.set(false);
+		resultNo = new Promise((resolve) => {
+			resolve(true);
+		});
+		// console.log('handleClick-result: ' + result);
 	}
-	
+
+	// async function buttonPromise(button: HTMLButtonElement): Promise<boolean> {
+	// 	return new Promise<boolean>((resolve) => {
+	// 		button.addEventListener('click', () => {
+	// 			resolve(true); // Resolve the promise with a value of true when the button is clicked
+	// 		});
+	// 	});
+	// }
+
+	// async function handleClick(button: HTMLButtonElement) {
+		
+	// 	button.click(())
+
+	// 	// Wait for the result and handle it
+	// }
+
+	// async function awaitPromise<T>(button: HTMLButtonElement): Promise<T> {
+	// 	return await promise;
+	// }
+
+	// export async function testDialogue(): Promise<boolean> {
+
+	// 	const button1 = document.getElementById('buttonYes') as HTMLButtonElement;
+	// 	const button2 = document.getElementById('buttonNo') as HTMLButtonElement;
+	// 	// const promiseYes = await handleClick(button1);
+	// 	// const promiseNo = await handleClick(button2);
+
+	// 	// const promiseYes = await awaitPromise(resultYes);
+	// 	// const promiseNo = await awaitPromise(resultNo);
+
+	// 	dialogueOpen.set(true);
+	// 	console.log('PromiseYes: '+promiseYes);
+	// 	console.log('PromiseNO: '+promiseNo);
+	// 	const dialogueVal = Promise.race([promiseYes, promiseNo]).then((result) => {
+	// 		console.log(result);
+	// 		dialogueOpen.set(false);
+	// 		return result;
+	// 	});
+
+	// 	// let dialogueVal: boolean = await fetchClick();
+	// 	// const timeInt = setInterval(async () => {
+	// 	// 	dialogueVal = await fetchClick();
+	// 	// 	console.log('dialogValServer= ' + dialogueVal);
+	// 	// 	if (dialogueVal !== null) {
+	// 	// 		clearInterval(timeInt);
+	// 	// 		dialogueOpen.set(false);
+	// 	// 	}
+	// 	// }, 200);
+
+	// 	return false;
+	// }
 </script>
 
 <div class="relative z-20" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -81,18 +145,19 @@
 				</div>
 				<div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
 					<button
+						on:click={confirmHandler}
+						id="buttonYes"
 						type="button"
 						class="inline-flex w-full justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
-						on:click={() =>
-							confirmHandler()
-						}>Iya</button
+						>Iya</button
 					>
 					<button
+						on:click={cancelHandler}
+						bind:this={buttonNo}
+						id="buttonNo"
 						type="button"
 						class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-						on:click={() =>
-							cancelHandler()
-						}>Tidak</button
+						>Tidak</button
 					>
 				</div>
 			</div>

@@ -1,32 +1,35 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
-	import { userId } from '../lib/dPegawai';
-
-	export let data;
-	export let form;
+	import type { PageData, SubmitFunction } from './$types.js';
 
 	let hasError = false,
 		errMessage = '',
 		fusername = '',
-		username = '';
+		fpassword = '';
 
-	const submitBtnHandle = () => {
-		userId.set(fusername)
+	const submitHandler: SubmitFunction = ({cancel}) => {
 		
-		if (fusername == '') {
+		if (fusername == '' || fpassword == '') {
+			cancel()
 			hasError = true;
 			errMessage = 'Semua kolom harus diisi!';
 			console.log('hasError: ' + hasError);
 			console.log('errMessage: ' + errMessage);
-		} else if (fusername.length > 1) {
-			hasError = true;
-			errMessage = 'Username dan password tidak sesuai';
-			console.log('hasError: ' + hasError);
-			console.log('errMessage: ' + errMessage);
-		} else {
-			username = fusername;
-			console.log('username: '+username);
-			goto('./main');
+		} 
+		
+		return async ({result}) => {
+			if (
+				result.type == 'success'
+				// result.status == 201
+				) {
+				goto('./main');
+			}
+
+			if (result.type == 'failure') {
+				hasError = true;
+				errMessage = result.data?.message!;
+			}
 		}
 	};
 </script>
@@ -48,8 +51,7 @@
 					<p class="text-red-900 text-sm">{errMessage}</p>
 				</div>
 			{/if}
-			<!-- <form method="post" action="?/login"> -->
-				<form on:submit|preventDefault={submitBtnHandle}>
+				<form method="POST" use:enhance={submitHandler} action='?/login'>
 				<label class="labe font-semibold" for="fusernamee">Username</label>
 				<input
 					class="input input-bordered w-full bg-slate-100"
@@ -60,7 +62,7 @@
 				/>
 
 				<label class="label font-semibold" for="fpassword">Password</label>
-				<input class="input input-bordered w-full bg-slate-100" type="password" name="password" />
+				<input class="input input-bordered w-full bg-slate-100" type="password" name="password" bind:value={fpassword}/>
 				<div class="flex">
 					<div class="grow" />
 					<button class="btn btn-primary mt-3"> Masuk </button>

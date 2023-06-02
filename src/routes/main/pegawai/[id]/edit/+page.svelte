@@ -1,55 +1,108 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { setDialogue } from '$lib/Dialogue.svelte';
-	import { dialogueOpen, dialogueValue, navigationBlocked } from '$lib/dialogueStore';
+	import { dialogueOpen, dialogueValue, navigationBlocked} from '$lib/dialogueStore';
 	import { showMessage } from '$lib/Message.svelte';
-	import type { SubmitFunction } from './$types.js';
+	import type { PageData, SubmitFunction } from './$types';
 	import { formatDateYMD } from '$lib/Functions';
+	import { enhance } from '$app/forms';
 
-	// export let data;
-	// export let form;
-
-	navigationBlocked.set(true)
+	export let data: PageData;
+	// $: ({ staff: data });
 
 	const today = new Date();
+	navigationBlocked.set(true);
 
 	let errorMessage = {
 		show: false,
 		message: ''
 	};
-	let formValue = ['', '', '', '', '', '', '', '', '', '', '', '', '', ''];
+
+	let marriedStatus = '';
+	switch (data.staff.is_married) {
+		case true: {
+			marriedStatus = 'Menikah';
+			break;
+		}
+		case false: {
+			marriedStatus = 'Tidak Menikah';
+			break;
+		}
+	}
+
+	let children = '';
+	switch (data.staff.have_children) {
+		case 0: {
+			children = data.staff.have_children.toString();
+			break;
+		}
+		case 1: {
+			children = data.staff.have_children.toString();
+			break;
+		}
+		case 2: {
+			children = data.staff.have_children.toString();
+			break;
+		}
+		case 3: {
+			children = '3 atau lebih';
+			break;
+		}
+	}
+
+	// console.log('joinDate: '+formatDateYMD(data.staff.join_date))
+	let joinDate = formatDateYMD(data.staff.join_date);
+	let birthDate = formatDateYMD(data.staff.birth_date);
+
+	let formValue = [
+		data.staff.name,
+		data.staff.department,
+		data.staff.position,
+		joinDate,
+		data.staff.address,
+		data.staff.phone_numb,
+		data.staff.email,
+		data.staff.birth_place,
+		birthDate,
+		marriedStatus,
+		children,
+		data.staff.bpjs_id,
+		data.staff.npwp,
+		data.staff.salary
+	];
 
 	const submitHandler: SubmitFunction = ({ cancel }) => {
-		errorMessage.show = false;
+		setDialogue('Edit Pegawai', 'Apakah Anda Yakin mengubah data pegawai?');
+		dialogueOpen.set(true);
 
-		var emptyMessage = '';
+			errorMessage.show = false;
 
-		for (var i = 0; i < formValue.length; i++) {
-			if (formValue[i] === '') {
-				if (emptyMessage === '') {
-					emptyMessage = String(i + 1);
-				} else {
-					emptyMessage = emptyMessage + ', ' + String(i + 1);
+			var emptyMessage = '';
+			for (var i = 0; i < formValue.length; i++) {
+				if (formValue[i] === '') {
+					if (emptyMessage === '') {
+						emptyMessage = String(i + 1);
+					} else {
+						emptyMessage = emptyMessage + ', ' + String(i + 1);
+					}
+					console.log('empty message: ' + emptyMessage);
 				}
-				// console.log('empty message: ' + emptyMessage);
 			}
-		}
 
-		if (emptyMessage != '') {
-			cancel();
-			errorMessage.show = true;
-			errorMessage.message = 'Terdapat form yang belum diisi pada nomor ' + emptyMessage;
-		}
+			if (emptyMessage != '') {
+				cancel();
+				errorMessage.show = true;
+				errorMessage.message = 'Terdapat form yang kosong pada nomor ' + emptyMessage;
+			}
+		// }
 		return async ({ result }) => {
 			if (
 				result.type == 'success'
 				// result.status == 201
-				) {
+			) {
 				console.log('Actions Success');
 				console.log(result.status.toString);
-				goto('../pegawai');
-				navigationBlocked.set(false)
+				goto('../' + data.staff.id + '/profile');
 				showMessage('Data Pegawai Berhasil Ditambahkan!');
 			}
 
@@ -58,35 +111,18 @@
 				errorMessage.message = result.data?.message!;
 			}
 		};
-		// else {
-		// setDialogue('Tambah Pegawai', 'Apakah Anda Yakin menambahkan data pegawai baru?');
-		// dialogueOpen.set(true);
-		// let timeIn = setInterval(() => {
-		// 	if (!$dialogueOpen) {
-		// 		clearInterval(timeIn);
-		// 		if (!$dialogueValue) {
-		// 			console.log('dialog batal cancel');
-		// 		} else {
-		// 			console.log('tutup dialog confirmasi')
-		// 		}
-		// 	}
-		// }, 200);
-		// }
-
-		// if (dialogConfirm) {
-		// }
 	};
 
 	function cancelHandler() {
-		setDialogue('Batal Tambah Pegawai?', 'Data yang dimasukkan tidak akan disimpan');
+		setDialogue('Batal Edit Data Pegawai?', 'Data yang dimasukkan tidak akan disimpan');
 		dialogueOpen.set(true);
 		let timeIn = setInterval(() => {
 			if (!$dialogueOpen) {
 				clearInterval(timeIn);
 				switch ($dialogueValue) {
 					case true: {
-						goto('../pegawai');
-						navigationBlocked.set(false)
+						goto('../' + data.staff.id + '/profile');
+						navigationBlocked.set(false);
 					}
 					case false: {
 						console.log('dialog batal cancel');
@@ -98,12 +134,11 @@
 </script>
 
 <main>
-	<section class="place-content-center w-full h-screen drop-shadow-2xl p-5 text-slate-700">
+	<section class="place-content-center w-full h-screen drop-shadow-2xl rounded p-5 text-slate-700">
 		<div class="w-full h-full bg-slate-100 rounded p-5">
-			<h2 class="font-['Helvetica Neue'] font-black text-2xl text-primary">TAMBAH PEGAWAI</h2>
-			<p>Silahkan mengisi informasi pegawai melalui form dibawah:</p>
-			<!-- <form class="h-[42rem] py-2" on:submit|preventDefault={submitHandler} method="POST"> -->
-			<form class="h-[42rem] py-2" method="POST" use:enhance={submitHandler}>
+			<h2 class="font-['Helvetica Neue'] font-black text-2xl text-primary">EDIT PROFIL PEGAWAI</h2>
+			<p>Silahkan mengubah informasi pegawai melalui form dibawah:</p>
+			<form class="h-[42rem] py-2" method="POST" use:enhance={submitHandler} action="?/editStaff">
 				<div class="h-[36rem] overflow-y-scroll">
 					<label class="label font-bold w-fit" for="fnama"
 						>1.Nama<span class="text-red-500">*</span>
@@ -155,7 +190,7 @@
 						type="date"
 						name="join_date"
 						max={formatDateYMD(today)}
-						min='2000-01-01'
+						min="2000-01-01"
 						bind:value={formValue[3]}
 					/>
 					<label class="label font-bold w-fit" for="falamat"
@@ -214,7 +249,7 @@
 								type="date"
 								name="birth_date"
 								max={formatDateYMD(today)}
-								min='1960-01-01'
+								min="1960-01-01"
 								bind:value={formValue[8]}
 							/>
 						</div>
@@ -300,7 +335,7 @@
 					<div class="flex-grow" />
 					<div class="card-actions justify-end px-3 py-2">
 						<button class="btn" on:click|preventDefault={cancelHandler}>Batal </button>
-						<button class="btn btn-primary">Tambah </button>
+						<button class="btn btn-primary" type="submit">Edit </button>
 					</div>
 				</div>
 			</form>

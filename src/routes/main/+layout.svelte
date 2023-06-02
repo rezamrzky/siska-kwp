@@ -1,27 +1,34 @@
 <script lang="ts">
-	// import { username } from '../+page.svelte';
-	import { userId } from '$lib/dPegawai';
 	import { page } from '$app/stores';
+	import { dialogueOpen, messageOpen, navigationBlocked } from '$lib/dialogueStore';
 
-	// import { dialogueOpen, messageOpen } from '../../lib/dialogueStore';
-	import { dialogueOpen, messageOpen } from '$lib/dialogueStore';
-	import { setDialogue } from '../../lib/Dialogue.svelte';
+	export let data: LayoutData;
+	const staff = data.user.staff;
 
-	let username = '';
-
-	userId.subscribe((value) => {
-		username = value;
-	});
-
-	import { dUser, getUserByBagian } from '../../lib/dUsers';
 	import Dialogue from '../../lib/Dialogue.svelte';
-	import Message from '$lib/Message.svelte';
+	import Message, { showMessage } from '$lib/Message.svelte';
+	import type { LayoutData, SubmitFunction } from './$types';
+	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
 
-	let user = getUserByBagian(username);
+	if(data.user.status !== 'Aktif'){
+		goto('./main/password');
+	}
 
-	function logOutHandler() {
-		setDialogue('Log Out', 'Anda yakin akan melakukan log out?');
-		dialogueOpen.set(true);
+	export const logOutHandler: SubmitFunction = () => {
+		// setDialogue('Log Out', 'Anda yakin akan melakukan log out?');
+		// dialogueOpen.set(true);
+
+		console.log('logouthander')
+
+		return async ({result}) => {
+			if (result.type === 'success') {
+				goto('../');
+			}
+			if (result.type === 'failure') {
+				showMessage(result.data?.message!);
+			}
+		}
 	}
 </script>
 
@@ -35,6 +42,10 @@
 		{/if}
 	</div>
 	<section class="navigation basis-1/5 bg-primary h-full drop-shadow-2xl flex flex-col">
+		{#if $navigationBlocked}
+			<div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity z-10" />
+		{/if}
+
 		<header class="font-['Helvetica Neue] text-xl text-center text-white font-black pt-5">
 			Sistem Katering KWP
 		</header>
@@ -42,29 +53,28 @@
 			class="menu text-secondary-content font-['Helvetica Neue] menu-compact w-full p-2 rounded-box flex-grow"
 		>
 			<div class="divider" />
-			{#if username === '1'}
-				<li>
-					<a href="/main" class="item" class:active={$page.url.pathname == '/main'}>
-						<svg
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke-width="1.5"
-							stroke="currentColor"
-							class="w-6 h-6"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
-							/>
-						</svg>
-						Home
-						<div class="flex-grow" />
-						<div class="badge badge-secondary">+99</div>
-					</a>
-				</li>
-				<!-- <div class="text-xs ml-4 font-bold">Food & Drink</div> -->
+			<li>
+				<a href="/main" class="item" class:active={$page.url.pathname == '/main'}>
+					<svg
+						xmlns="http://www.w3.org/2000/svg"
+						fill="none"
+						viewBox="0 0 24 24"
+						stroke-width="1.5"
+						stroke="currentColor"
+						class="w-6 h-6"
+					>
+						<path
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+						/>
+					</svg>
+					Home
+					<div class="flex-grow" />
+					<div class="badge badge-secondary">+99</div>
+				</a>
+			</li>
+			{#if staff.department === 'Manajer' || staff.department === 'Food & Drink' || staff.department === 'Ekonomi PWP'}
 				<li class="menu-title"><span>Food & Drink</span></li>
 				<li>
 					<a href="/main/events"
@@ -85,25 +95,28 @@
 						Food & Drink</a
 					>
 				</li>
-				<li>
-					<a href="/main/fd-bill"
-						><svg
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke-width="1.5"
-							stroke="currentColor"
-							class="w-6 h-6"
+				{#if staff.department === 'Manajer' || staff.department === 'Ekonomi PWP'}
+					<li>
+						<a href="/main/fd-bill"
+							><svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke-width="1.5"
+								stroke="currentColor"
+								class="w-6 h-6"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z"
+								/>
+							</svg>
+							Tagihan FD</a
 						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z"
-							/>
-						</svg>
-						Tagihan FD</a
-					>
-				</li>
+					</li>
+				{/if}{/if}
+			{#if staff.department === 'Manajer' || staff.department === 'Dining Room' || staff.department === 'Ekonomi PWP'}
 				<li class="menu-title"><span>Dining Room</span></li>
 				<li>
 					<a href="/main/inventory"
@@ -181,25 +194,28 @@
 						Menu</a
 					>
 				</li>
-				<li>
-					<a href="/main/dr-report"
-						><svg
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke-width="1.5"
-							stroke="currentColor"
-							class="w-6 h-6"
+				{#if staff.department === 'Manajer' || staff.department === 'Ekonomi PWP'}
+					<li>
+						<a href="/main/dr-report"
+							><svg
+								xmlns="http://www.w3.org/2000/svg"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke-width="1.5"
+								stroke="currentColor"
+								class="w-6 h-6"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25M9 16.5v.75m3-3v3M15 12v5.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+								/>
+							</svg>
+							Laporan DR</a
 						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25M9 16.5v.75m3-3v3M15 12v5.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
-							/>
-						</svg>
-						Laporan DR</a
-					>
-				</li>
+					</li>
+				{/if}{/if}
+			{#if staff.department === 'Manajer'}
 				<li class="menu-title"><span>Kepegawaian</span></li>
 				<li>
 					<a href="/main/pegawai">
@@ -239,268 +255,20 @@
 						Akun Pegawai</a
 					>
 				</li>
-			{:else if username === '2'}
-			<li>
-				<a href="/main" class="item" class:active={$page.url.pathname == '/main'}>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="1.5"
-						stroke="currentColor"
-						class="w-6 h-6"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
-						/>
-					</svg>
-					Home
-					<div class="flex-grow" />
-					<div class="badge badge-secondary">+99</div>
-				</a>
-			</li>
-			<li class="menu-title"><span>Food & Drink</span></li>
-			<li>
-				<a href="/main/events"
-					><svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="1.5"
-						stroke="currentColor"
-						class="w-6 h-6"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
-						/>
-					</svg>
-					Food & Drink</a
-				>
-			</li>
-			{:else if username === '3'}
-			<li>
-				<a href="/main" class="item" class:active={$page.url.pathname == '/main'}>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="1.5"
-						stroke="currentColor"
-						class="w-6 h-6"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
-						/>
-					</svg>
-					Home
-					<div class="flex-grow" />
-					<div class="badge badge-secondary">+99</div>
-				</a>
-			</li>
-			<li class="menu-title"><span>Food & Drink</span></li>
-			<li>
-				<a href="/main/events"
-					><svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="1.5"
-						stroke="currentColor"
-						class="w-6 h-6"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
-						/>
-					</svg>
-					Food & Drink</a
-				>
-			</li>
-			<li>
-				<a href="/main/fd-bill"
-					><svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="1.5"
-						stroke="currentColor"
-						class="w-6 h-6"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z"
-						/>
-					</svg>
-					Tagihan FD</a
-				>
-			</li>
-			<li class="menu-title"><span>Dining Room</span></li>
-			<li>
-				<a href="/main/restock"
-					><svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="1.5"
-						stroke="currentColor"
-						class="w-6 h-6"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
-						/>
-					</svg>
-					Belanja Dining Room</a
-				>
-			</li>
-				<li>
-					<a href="/main/dr-report"
-						><svg
-							xmlns="http://www.w3.org/2000/svg"
-							fill="none"
-							viewBox="0 0 24 24"
-							stroke-width="1.5"
-							stroke="currentColor"
-							class="w-6 h-6"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25M9 16.5v.75m3-3v3M15 12v5.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
-							/>
-						</svg>
-						Laporan DR</a
-					>
-				</li>
-			{:else if username === '4'}
-			<li>
-				<a href="/main" class="item" class:active={$page.url.pathname == '/main'}>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="1.5"
-						stroke="currentColor"
-						class="w-6 h-6"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
-						/>
-					</svg>
-					Home
-					<div class="flex-grow" />
-					<div class="badge badge-secondary">+99</div>
-				</a>
-			</li>
-			<li class="menu-title"><span>Dining Room</span></li>
-			<li>
-				<a href="/main/inventory"
-					><svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="1.5"
-						stroke="currentColor"
-						class="w-6 h-6"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
-						/>
-					</svg>
-					Stok Bahan Baku</a
-				>
-			</li>
-			<li>
-				<a href="/main/restock"
-					><svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="1.5"
-						stroke="currentColor"
-						class="w-6 h-6"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m8.25 3v6.75m0 0l-3-3m3 3l3-3M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"
-						/>
-					</svg>
-					Belanja Dining Room</a
-				>
-			</li>
-			<li>
-				<a href="/main/recipe"
-					><svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="1.5"
-						stroke="currentColor"
-						class="w-6 h-6"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M15.666 3.888A2.25 2.25 0 0013.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 01-.75.75H9a.75.75 0 01-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 011.927-.184"
-						/>
-					</svg>
-					Resep</a
-				>
-			</li>
-			<li>
-				<a href="/main/menu"
-					><svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="1.5"
-						stroke="currentColor"
-						class="w-6 h-6"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"
-						/>
-					</svg>
-					Menu</a
-				>
-			</li>
 			{/if}
 			<div class="divider" />
 		</ul>
 		<footer class="font-['Helvetica Neue] text-sm font-light text-center w-full p-5 text-white">
-			<p class="font-bold text-ml">Halo {user?.username}!</p>
-			<p>{user?.nama}</p>
-			{#if username == '1'}
-				<p>Manajer Katering KWP</p>
-			{/if}
-			{#if username == '2'}
-				<p>Admin Food & Drink</p>
-			{/if}
-			{#if username == '3'}
-				<p>Ekonomi PWP</p>
-			{/if}
-			{#if username == '4'}
-				<p>Dining Room</p>
-			{/if}
-			<p class="pb-3">{user?.phone}</p>
-			<button class="btn btn-outline btn-xs"> <a href="/main/user">Ganti Password</a></button>
-			<button class="btn btn-outline btn-xs btn-error" on:click={logOutHandler}>Logout</button>
+			<p class="font-bold text-ml">Halo {data.user.username}!</p>
+			<p>{staff.name}</p>
+			<p>{staff.position} {staff.department}</p>
+			<p class="pb-3">{staff.phone_numb}</p>
+			<div class="flex gap-2 justify-center w-full">
+			<button class="btn btn-outline btn-xs"> <a href="/main/password">Ganti Password</a></button>
+			<form method="POST" action="?/logout" use:enhance={logOutHandler}>
+				<button class="btn btn-outline btn-xs btn-error" type="submit">Logout</button>
+			</form>
+		</div>
 		</footer>
 	</section>
 	<section class="content-container basis-4/5 bg-blue-200">
