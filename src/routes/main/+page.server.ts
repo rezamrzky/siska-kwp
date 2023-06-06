@@ -1,11 +1,11 @@
 import type { user } from "@prisma/client";
 import type { Actions, PageServerLoad } from "./$types";
-import { fail } from "@sveltejs/kit";
-import bcrypt from 'bcrypt';
+import { fail, redirect } from "@sveltejs/kit";
 
 let iUser: user | null;
 
 export const load: PageServerLoad = async ({ cookies }) => {
+    if(cookies.get('session')){
     const user = await prisma.user.findFirst({
         where: {
             authToken: cookies.get('session')
@@ -13,10 +13,13 @@ export const load: PageServerLoad = async ({ cookies }) => {
     })
     iUser = user;
     return { user: JSON.parse(JSON.stringify(user)) }
+} else {
+    throw redirect(301, '/')
+}
 };
 
 export const actions: Actions = {
-    logout:async ({cookies}) => {
+    logout: async ({ cookies }) => {
 
         console.log('logout actions')
         try {
@@ -36,13 +39,9 @@ export const actions: Actions = {
         cookies.set('session', '', {
             path: '/',
             expires: new Date(0),
-          })
+        })
 
-          const string = await bcrypt.hash('asdfgh', 10);
-          console.log('new pass: '+string)
+        
 
-          return {
-            type: 'success'
-        }
     }
 };

@@ -12,7 +12,8 @@ export const load: PageServerLoad = (async ({cookies}) => {
                 select: {
                     name: true,
                     department: true,
-                    position: true
+                    position: true,
+                    birth_date: true
                 }
             }
         }

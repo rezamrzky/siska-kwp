@@ -8,6 +8,8 @@ export const showDialog = writable(false);
 
 export const navigationBlocked = writable(false);
 
+export const imgSrc = writable();
+
 // export function testDialog(dTitle: string, dDesc: string): boolean {
 //     dialogueOpen.set(true);
 // 		const timeIn = setInterval(() => {

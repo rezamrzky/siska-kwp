@@ -10,8 +10,9 @@
 	import type { LayoutData, SubmitFunction } from './$types';
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
+	import { foodNDrinkNotif } from '$lib/Notifikasi';
 
-	if(data.user.status !== 'Aktif'){
+	if (data.user.status !== 'Aktif') {
 		goto('./main/password');
 	}
 
@@ -19,17 +20,17 @@
 		// setDialogue('Log Out', 'Anda yakin akan melakukan log out?');
 		// dialogueOpen.set(true);
 
-		console.log('logouthander')
+		// console.log('logouthander');
 
-		return async ({result}) => {
+		return async ({ result }) => {
 			if (result.type === 'success') {
-				goto('../');
+				// goto('../');
 			}
 			if (result.type === 'failure') {
 				showMessage(result.data?.message!);
 			}
-		}
-	}
+		};
+	};
 </script>
 
 <main class="mx-auto h-screen flex flex-col lg:flex-row bg-slate-100">
@@ -70,14 +71,14 @@
 						/>
 					</svg>
 					Home
-					<div class="flex-grow" />
-					<div class="badge badge-secondary">+99</div>
+					<!-- <div class="flex-grow" />
+					<div class="badge badge-secondary">+99</div> -->
 				</a>
 			</li>
 			{#if staff.department === 'Manajer' || staff.department === 'Food & Drink' || staff.department === 'Ekonomi PWP'}
 				<li class="menu-title"><span>Food & Drink</span></li>
 				<li>
-					<a href="/main/events"
+					<a href="/main/fd-events"
 						><svg
 							xmlns="http://www.w3.org/2000/svg"
 							fill="none"
@@ -92,7 +93,11 @@
 								d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
 							/>
 						</svg>
-						Food & Drink</a
+						Food & Drink
+						{#if $foodNDrinkNotif > 0}
+						<div class="flex-grow" />
+						<div class="badge badge-secondary">{$foodNDrinkNotif}</div>
+						{/if}</a
 					>
 				</li>
 				{#if staff.department === 'Manajer' || staff.department === 'Ekonomi PWP'}
@@ -264,11 +269,11 @@
 			<p>{staff.position} {staff.department}</p>
 			<p class="pb-3">{staff.phone_numb}</p>
 			<div class="flex gap-2 justify-center w-full">
-			<button class="btn btn-outline btn-xs"> <a href="/main/password">Ganti Password</a></button>
-			<form method="POST" action="?/logout" use:enhance={logOutHandler}>
-				<button class="btn btn-outline btn-xs btn-error" type="submit">Logout</button>
-			</form>
-		</div>
+				<button class="btn btn-outline btn-xs"> <a href="/main/password">Ganti Password</a></button>
+				<form method="POST" action="/main?/logout" use:enhance={logOutHandler}>
+					<button class="btn btn-outline btn-xs btn-error" type="submit">Logout</button>
+				</form>
+			</div>
 		</footer>
 	</section>
 	<section class="content-container basis-4/5 bg-blue-200">

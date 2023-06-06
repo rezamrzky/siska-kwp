@@ -34,3 +34,19 @@ export function currencyToString(number: any){
     
       return format.format(number);
 }
+
+export function number3DigitFormat(number: number): string{
+  return number.toString().padStart(3, "0");
+}
+
+export function formatTime(date: Date): string {
+  const dateObj = new Date(date);
+  const hours = dateObj.getHours();
+  const minutes = dateObj.getMinutes();
+
+  // Pad the hours and minutes with zeros if they are less than 10
+  // hours = hours < 10 ? "0" + hours : hours;
+  // minutes = minutes < 10 ? "0" + minutes : minutes;
+
+  return `${hours}:${minutes}`;
+}

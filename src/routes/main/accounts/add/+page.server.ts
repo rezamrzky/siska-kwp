@@ -34,7 +34,7 @@ export const actions: Actions = {
             const staffIndex = initialStaffs.findIndex(staff => staff.id === staffArray[i])
             const staff = JSON.parse(JSON.stringify(initialStaffs[staffIndex]))
             const username = await createUsername(staff)
-            const password = await createPassword()
+            const password = await createPassword(staff)
             // console.log('staff: ' + initialStaffs[staffIndex].name);
             // console.log('username: '+username)
             // console.log('password: '+password)
@@ -115,14 +115,11 @@ async function usernameCheck(uname: string): Promise<boolean> {
     return true;
 }
 
-async function createPassword(): Promise<string> {
-    const char = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
+async function createPassword(staff: staff): Promise<string> {
+    const nameArr = staff.name.split(' ');
+    const birthDate = new Date(staff.birth_date);
+    const char = nameArr[0]+String(birthDate.getFullYear());
 
-  for (let i = 0; i < 6; i++) {
-    result += char.charAt(Math.floor(Math.random() * char.length));
-  }
-
-  const hashResult = await bcrypt.hash(result, 10);
+  const hashResult = await bcrypt.hash(char, 10);
   return hashResult;
 }

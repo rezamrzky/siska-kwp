@@ -179,27 +179,30 @@ model fd_bill_payment {
 }
 
 model fd_event {
-  id               Int              @id @default(autoincrement())
-  event_date       DateTime         @db.Date
-  event_place      String           @db.VarChar
-  department       String           @db.VarChar
+  id               Int               @id @default(autoincrement())
+  event_date       DateTime          @db.Timestamp()
+  event_place      String            @db.VarChar
+  department       String            @db.VarChar
   purpose          String
-  vendor           String           @db.VarChar
-  total_pax        Int
-  total_price      Decimal          @db.Money
-  staff_id         String           @db.VarChar
-  payment_id       Int
+  vendor           String            @db.VarChar
+  total_pax        String            @db.VarChar
+  total_price      Decimal           @db.Money
+  status           String            @db.VarChar
+  staff_id         String            @db.VarChar
+  created_at       DateTime          @db.Date
+  confirmed_date   DateTime?         @db.Timestamptz(6)
+  payment_id       Int?
   bill_id          Int?
-  fd_bill          fd_bill?         @relation(fields: [bill_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  fd_event_payment fd_event_payment @relation(fields: [payment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  staff            staff            @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  fd_bill          fd_bill?          @relation(fields: [bill_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  fd_event_payment fd_event_payment? @relation(fields: [payment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  staff            staff             @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model fd_event_payment {
   id             Int        @id(map: "fd_payment_pkey") @default(autoincrement())
-  date           String     @db.Char
+  date           DateTime   @db.Date
   total          Decimal    @db.Money
-  proof          Bytes
+  proof_name     String     @db.VarChar
   confirmed_by   String     @db.VarChar
   confirmed_date DateTime   @db.Timestamptz(6)
   fd_event       fd_event[]

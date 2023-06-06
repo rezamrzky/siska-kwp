@@ -14,7 +14,6 @@
 
 	let isFilter = false;
 	let filterBy = '';
-	let filterStatusBy = '';
 
 	let tabs = ['tab-active', '', '', '', ''];
 	let tabsColor = [
@@ -74,15 +73,15 @@
 
 			switch (index) {
 				case 1: {
-					shownData = accounts.filter((akun: { status: string; }) => akun.status === 'Aktif')
+					shownData = accounts.filter((akun: { status: string }) => akun.status === 'Aktif');
 					break;
 				}
 				case 2: {
-					shownData = accounts.filter((akun: { status: string; }) => akun.status === 'Beku')
+					shownData = accounts.filter((akun: { status: string }) => akun.status === 'Beku');
 					break;
 				}
 				case 3: {
-					shownData = accounts.filter((akun: { status: string; }) => akun.status === 'Tidak Aktif')
+					shownData = accounts.filter((akun: { status: string }) => akun.status === 'Tidak Aktif');
 					break;
 				}
 				default: {
@@ -96,7 +95,7 @@
 	function textColor(status: string): string {
 		switch (status) {
 			case 'Tidak Aktif': {
-				return 'text-cyan-300';
+				return 'text-secondary';
 			}
 			case 'Aktif': {
 				return 'text-success';
@@ -148,6 +147,12 @@
 		// 		}
 		// 	}
 		// }, 200);
+	}
+
+	function createPassword(staff: any): string {
+		const nameArr = staff.name.split(' ');
+		const birthDate = new Date(staff.birth_date);
+		return nameArr[0]+birthDate.getFullYear();
 	}
 </script>
 
@@ -232,7 +237,9 @@
 								<td
 									><div class="font-bold">{user.username}</div>
 									{#if !user.last_login}
-										<span class="badge badge-warning badge-sm">password: {user.password}</span>
+										<span class="badge badge-secondary badge-sm"
+											>password: {createPassword(user.staff)}</span
+										>
 									{/if}
 								</td>
 								<td class="text-center">
@@ -248,16 +255,21 @@
 									<div class="dropdown dropdown-end">
 										<button
 											class="btn btn-xs btn-ghost gap-2 btn-outline"
-											disabled={data.user.username === user.username}>Ubah Status<svg
-											xmlns="http://www.w3.org/2000/svg"
-											fill="grey" viewBox="0 0 512 512" stroke="currentColor"
-											class="w-3 h-3"
-										>
-											<path
-											stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-												d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"
-											/></svg
-										></button
+											disabled={data.user.username === user.username}
+											>Ubah Status<svg
+												xmlns="http://www.w3.org/2000/svg"
+												fill="grey"
+												viewBox="0 0 512 512"
+												stroke="currentColor"
+												class="w-3 h-3"
+											>
+												<path
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
+													d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"
+												/></svg
+											></button
 										>
 										<ul
 											id={user.username}
@@ -275,7 +287,7 @@
 								<td
 									><div class="font-bold">{user.username}</div>
 									{#if !user.last_login}
-										<span class="badge badge-warning badge-sm">password: {user.password}</span>
+										<span class="badge badge-warning badge-sm">password: {createPassword(user.staff)}</span>
 									{/if}
 								</td>
 								<td class="text-center">
@@ -295,11 +307,15 @@
 											>Ubah Status
 											<svg
 												xmlns="http://www.w3.org/2000/svg"
-												fill="grey" viewBox="0 0 512 512" stroke="currentColor"
+												fill="grey"
+												viewBox="0 0 512 512"
+												stroke="currentColor"
 												class="w-3 h-3"
 											>
 												<path
-												stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+													stroke-linecap="round"
+													stroke-linejoin="round"
+													stroke-width="2"
 													d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"
 												/></svg
 											>
