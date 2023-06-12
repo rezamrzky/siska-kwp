@@ -158,8 +158,10 @@ model fd_bill {
   pph23            Decimal           @db.Money
   total_after_tax  Decimal           @db.Money
   date             DateTime          @db.Date
-  status           String            @db.Char
+  status           String            @db.VarChar
   note             String
+  approval         Boolean?          @db.Boolean
+  approval_at      DateTime?         @db.Timestamptz()
   created_by       String            @db.VarChar
   created_at       DateTime          @db.Timestamptz(6)
   staff            staff             @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fd_bill_staff_id_fkey")
