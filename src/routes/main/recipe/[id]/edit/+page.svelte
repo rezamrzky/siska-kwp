@@ -9,14 +9,21 @@
 
 	export let data: PageData;
 	$: ({ ingredients } = data);
+	$: ({recipe} = data)
 
 	navigationBlocked.set(true)
 
 	let listOut: Array<number> = [];
 	let valueArray = new Array<string>(data.ingredients.length);
 
-	var name = '',
-		unit = '';
+	data.ingredients.forEach((e:any, i:any) => {
+		if(e.dr_recipe_ingredients[0]){
+			valueArray[i] = e.dr_recipe_ingredients[0].quantity
+		}
+	});
+
+	var name = data.recipe.name,
+		portion = data.recipe.portion;
 
 	let errorMessage = {
 		show: false,
@@ -26,7 +33,7 @@
 	const submitHandler: SubmitFunction = ({ cancel }) => {
 		errorMessage.show = false;
 
-		if (listOut.length < 1 || name === '' || unit === '') {
+		if (listOut.length < 1 || name === '' || portion === '') {
 			errorMessage.show = true;
 			errorMessage.message = 'Terdapat form yang belum diisi!';
 			cancel();
@@ -34,8 +41,8 @@
 
 		return async ({ result }) => {
 			if (result.type === 'success') {
-				goto('../recipe');
-				showMessage('Resep Berhasil Ditambahkan!');
+				goto('./detail');
+				showMessage('Resep Berhasil Diubah!');
 				navigationBlocked.set(false)
 			}
 		};
@@ -60,14 +67,14 @@
 	};
 
 	function cancelHandler() {
-		setDialogue('Batal Tambah Resep?', 'Data yang dimasukkan tidak akan disimpan');
+		setDialogue('Batal Edit Resep?', 'Data yang dimasukkan tidak akan disimpan');
 		dialogueOpen.set(true);
 		let timeIn = setInterval(() => {
 			if (!$dialogueOpen) {
 				clearInterval(timeIn);
 				switch ($dialogueValue) {
 					case true: {
-						goto('../recipe');
+						goto('./detail');
 						navigationBlocked.set(false)
 					}
 					case false: {
@@ -95,15 +102,15 @@
 </script>
 
 <main class="mx-auto h-screen flex flex-col bg-slate-100 p-5">
-	<form method="POST" action="?/add" use:enhance={submitHandler}>
+	<form method="POST" action="?/edit" use:enhance={submitHandler}>
 		<div class="font-['Helvetica Neue] w-full ml-2 text-slate-700">
-			<h1 class="font-black text-2xl text-primary">TAMBAH RESEP</h1>
+			<h1 class="font-black text-2xl text-primary">EDIT RESEP</h1>
 			<p class="text-slate-700">Silahkan mengisi formulir dibawah:</p>
 			<div class="bg-blue-200 p-3 rounded flex gap-2">
 				<div class="grow">
 					<label class="label font-bold" for="fingredients">Nama Resep</label>
 					<input
-						class="input input-bordered w-full bg-slate-100 file-input-md capitalize"
+						class="input input-bordered w-full bg-slate-100 file-input-md"
 						type="text"
 						id="frecipes"
 						bind:value={name}
@@ -116,7 +123,7 @@
 						class="input input-bordered w-full bg-slate-100"
 						type="text"
 						id="fportions"
-						bind:value={unit}
+						bind:value={portion}
 						name="portion"
 					/>
 				</div>
@@ -167,7 +174,7 @@
 				<div class="justify-start text-red-500 italic text-sm">{errorMessage.message}</div>
 			{/if}
 			<button class="btn" on:click={cancelHandler}>Batal </button>
-			<button class="btn btn-primary" type="submit">TAMBAH </button>
+			<button class="btn btn-primary" type="submit">EDIT </button>
 		</div>
 	</form>
 </main>
