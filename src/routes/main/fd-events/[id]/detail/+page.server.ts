@@ -66,7 +66,7 @@ export const actions: Actions = {
     console.log('total: ' + total);
     const bill = formData.get('bill') as Blob;
     const buffer = Buffer.from(await bill.arrayBuffer());
-    const fileName = 'fdpaymentevent' + number3DigitFormat(event!.id) + '.jpg';
+    const fileName = 'fd-payment-event' + number3DigitFormat(event!.id) + '.jpg';
     let payment;
 
 

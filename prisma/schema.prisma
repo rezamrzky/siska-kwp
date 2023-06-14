@@ -11,8 +11,11 @@ model dr_ingredient {
   id                    Int                     @id @default(autoincrement())
   name                  String                  @db.VarChar
   unit                  String                  @db.VarChar
+  stock                 Decimal
+  stock_date            DateTime                @db.Date
   dr_ingredient_product dr_ingredient_product[]
   dr_recipe_ingredients dr_recipe_ingredients[]
+  dr_stock              dr_stock[]
 }
 
 model dr_ingredient_product {
@@ -20,7 +23,9 @@ model dr_ingredient_product {
   ingredient_id              Int
   brand                      String                       @db.VarChar
   product_unit               String                       @db.VarChar
-  quantity                   Int
+  quantity                   Decimal
+  stock                      Decimal
+  stock_date                 DateTime                     @db.Date
   dr_ingredient              dr_ingredient                @relation(fields: [ingredient_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   dr_restock_product         dr_restock_product[]
   dr_restock_product_confirm dr_restock_product_confirm[]
@@ -87,25 +92,29 @@ model dr_restock {
   created_at                 DateTime                     @db.Timestamptz(6)
   initial_date               DateTime                     @db.Date
   finish_date                DateTime                     @db.Date
-  total                      Int
+  total                      Decimal
   is_approved                Boolean
-  status                     Int
+  approved_date              DateTime?                    @db.Date
+  status                     String
   is_stock_confirmed         Boolean
+  note                       String                       @db.VarChar
+  staff_id                   String                       @db.VarChar
   dr_restock_bill            dr_restock_bill[]
   dr_restock_payment         dr_restock_payment[]
   dr_restock_product         dr_restock_product[]
   dr_restock_product_confirm dr_restock_product_confirm[]
+  staff                      staff                        @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model dr_restock_bill {
   id           Int        @id @default(autoincrement())
   date         DateTime   @db.Date
   total        Int
-  proof        Bytes
+  proof_name   String
   confirm_date DateTime   @db.Timestamptz(6)
-  confirm_by   String     @db.VarChar
+  staff_id     String     @db.VarChar
   restock_id   Int
-  staff        staff      @relation(fields: [confirm_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  staff        staff      @relation(fields: [staff_id], references: [id], onDelete: Restrict, onUpdate: NoAction)
   dr_restock   dr_restock @relation(fields: [restock_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
@@ -113,7 +122,7 @@ model dr_restock_payment {
   id           Int        @id @unique @default(autoincrement())
   date         DateTime   @db.Date
   total        Decimal    @db.Money
-  proof        Bytes
+  proof_name   String
   confirm_date DateTime   @db.Timestamptz(6)
   confirm_by   String     @db.VarChar
   restock_id   Int
@@ -124,9 +133,11 @@ model dr_restock_payment {
 model dr_restock_product {
   restock_id            Int
   product_id            Int
-  quantity              Int
+  quantity              Decimal
+  confirm_date          DateTime?             @db.Timestamptz(6)
+  confirm_quantity      Decimal?
   dr_ingredient_product dr_ingredient_product @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  dr_restock            dr_restock            @relation(fields: [restock_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dr_restock            dr_restock            @relation(fields: [restock_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@id([restock_id, product_id])
 }
@@ -135,7 +146,7 @@ model dr_restock_product_confirm {
   restock_id            Int
   product_id            Int
   created_date          DateTime              @db.Timestamptz(6)
-  quantity              Int
+  quantity              Decimal
   dr_ingredient_product dr_ingredient_product @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   dr_restock            dr_restock            @relation(fields: [restock_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
@@ -146,9 +157,11 @@ model dr_stock {
   id                    Int                   @id @default(autoincrement())
   date                  DateTime              @db.Date
   product_id            Int
-  quantity              Int
+  ingredient_id         Int
+  quantity              Decimal
   action                Int
   dr_ingredient_product dr_ingredient_product @relation(fields: [product_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dr_ingredient         dr_ingredient         @relation(fields: [ingredient_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model fd_bill {
@@ -234,6 +247,7 @@ model staff {
   fd_bill_payment    fd_bill_payment[]
   fd_event           fd_event[]
   user               user?
+  dr_restock         dr_restock[]
 }
 
 model user {

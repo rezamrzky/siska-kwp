@@ -123,6 +123,7 @@
 				{/if}{/if}
 			{#if staff.department === 'Manajer' || staff.department === 'Dining Room' || staff.department === 'Ekonomi PWP'}
 				<li class="menu-title"><span>Dining Room</span></li>
+				{#if staff.department !== 'Ekonomi PWP'}
 				<li>
 					<a href="/main/inventory"
 						><svg
@@ -142,6 +143,7 @@
 						Stok Bahan Baku</a
 					>
 				</li>
+				{/if}
 				<li>
 					<a href="/main/restock"
 						><svg
@@ -161,6 +163,7 @@
 						Belanja Dining Room</a
 					>
 				</li>
+				{#if staff.department !== 'Ekonomi PWP'}
 				<li>
 					<a href="/main/recipe"
 						><svg
@@ -199,6 +202,7 @@
 						Menu</a
 					>
 				</li>
+				{/if}
 				{#if staff.department === 'Manajer' || staff.department === 'Ekonomi PWP'}
 					<li>
 						<a href="/main/dr-report"
