@@ -42,21 +42,32 @@ model dr_menu {
 }
 
 model dr_menu_shift {
-  id          Int     @id @default(autoincrement())
-  menu_id     Int
-  shift_cat   Int
-  is_approved Boolean
-  recipe_ids  Int[]
-  dr_menu     dr_menu @relation(fields: [menu_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                    Int                     @id @default(autoincrement())
+  menu_id               Int
+  shift_cat             Int
+  is_approved           Boolean
+  day                   Int
+  dr_menu               dr_menu                 @relation(fields: [menu_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dr_menu_shift_recipes dr_menu_shift_recipes[]
+}
+
+model dr_menu_shift_recipes {
+  shift_id      Int
+  recipe_id     Int
+  dr_menu_shift dr_menu_shift @relation(fields: [shift_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dr_recipe     dr_recipe     @relation(fields: [recipe_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([shift_id, recipe_id])
 }
 
 model dr_modal {
-  id           Int      @id @default(autoincrement())
-  date         DateTime @db.Date
-  total        Decimal  @db.Money
-  created_date DateTime @db.Timestamptz(6)
-  created_by   String   @db.VarChar
-  staff        staff    @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id           Int         @id @default(autoincrement())
+  date         DateTime    @db.Date
+  total        Decimal     @db.Money
+  created_date DateTime    @db.Timestamptz(6)
+  created_by   String      @db.VarChar
+  staff        staff       @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dr_report    dr_report[]
 }
 
 model dr_recipe {
@@ -68,6 +79,7 @@ model dr_recipe {
   updated_date          DateTime?               @db.Date
   staff                 staff?                  @relation(fields: [updated_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   dr_recipe_ingredients dr_recipe_ingredients[]
+  dr_menu_shift_recipes dr_menu_shift_recipes[]
 }
 
 model dr_recipe_ingredients {
@@ -81,10 +93,17 @@ model dr_recipe_ingredients {
 }
 
 model dr_report {
-  id           Int     @id @default(autoincrement())
-  saldo        Decimal @db.Money
-  action       Int
-  reference_id Int
+  id                   Int                 @id @default(autoincrement())
+  saldo                Decimal             @db.Money
+  action               Int
+  created_date         DateTime?            @db.Date
+  modal_id             Int?
+  modal_total          Decimal?
+  payment_id           Int?
+  payment_total        Decimal?
+  note String?
+  dr_modal             dr_modal?           @relation(fields: [modal_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dr_restock_payment   dr_restock_payment? @relation(fields: [payment_id], references: [id])
 }
 
 model dr_restock {
@@ -119,15 +138,16 @@ model dr_restock_bill {
 }
 
 model dr_restock_payment {
-  id           Int        @id @unique @default(autoincrement())
-  date         DateTime   @db.Date
-  total        Decimal    @db.Money
+  id           Int         @id @unique @default(autoincrement())
+  date         DateTime    @db.Date
+  total        Decimal     @db.Money
   proof_name   String
-  confirm_date DateTime   @db.Timestamptz(6)
-  confirm_by   String     @db.VarChar
+  confirm_date DateTime    @db.Timestamptz(6)
+  confirm_by   String      @db.VarChar
   restock_id   Int
-  staff        staff      @relation(fields: [confirm_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  dr_restock   dr_restock @relation(fields: [restock_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  staff        staff       @relation(fields: [confirm_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dr_restock   dr_restock  @relation(fields: [restock_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dr_report    dr_report[]
 }
 
 model dr_restock_product {

@@ -268,8 +268,10 @@ export const actions: Actions = {
             // console.log("Success", objInfo)
         });
 
+
+        let payment; 
         try {
-            await prisma.dr_restock_payment.create({
+            payment = await prisma.dr_restock_payment.create({
                 data: {
                     date: date,
                     total: +total,
@@ -282,6 +284,41 @@ export const actions: Actions = {
         } catch (error) {
             console.log(error)
             return fail(500, { message: 'Gagal konfirmasi pembayaran!' })
+        }
+
+        const report = await prisma.dr_report.findMany({
+            orderBy:{
+                id: 'desc'
+            }
+        })
+
+        let saldoNew;
+
+        if(report.length === 0){
+            saldoNew = total
+        }else{
+            console.log('kesini?')
+            const tempTotal = new Prisma.Decimal(total)
+            saldoNew = +report[0].saldo - +tempTotal
+        }
+
+        // saldoNew = report[0].saldo?report[0].saldo:total;
+        console.log(saldoNew)
+
+
+        try {
+            await prisma.dr_report.create({
+                data:{
+                    payment_id: payment.id,
+                    payment_total: +total,
+                    created_date: today,
+                    action: -1,
+                    saldo: saldoNew,
+                    note: restocks?.note
+                }
+            })
+        } catch (error) {
+            return fail(500, { message: 'Gagal membuat report!' })
         }
 
         try {
