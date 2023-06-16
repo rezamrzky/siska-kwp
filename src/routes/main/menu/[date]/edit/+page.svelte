@@ -4,17 +4,12 @@
 	import { showMessage } from '$lib/Message.svelte';
 	import { goto } from '$app/navigation';
 	import type { PageData, SubmitFunction } from './$types';
-	import type { Prisma, dr_menu_shift } from '@prisma/client';
-	import { enhance } from '$app/forms';
 	import { number3DigitFormat } from '$lib/Functions';
+	import { enhance } from '$app/forms';
 
 	navigationBlocked.set(true);
 
-	export let data: PageData;
-	$: ({ recipes } = data);
-	// $: ({shiftMenu} = data)
-
-	$: monthString = [
+	const monthString = [
 		'Januari',
 		'Februari',
 		'Maret',
@@ -29,24 +24,27 @@
 		'Desember'
 	];
 
-	let errorMessage = {
-		show: false,
-		message: ''
-	};
+	export let data: PageData;
+	$: ({ recipes } = data);
 
-	const tempDate = new Date(data.nextMenu.date);
-	const menuRecipe: string[][][] = new Array<string[][]>(tempDate.getDate());
-	const menuShifts = data.nextMenu.dr_menu_shift;
+	const date = new Date(data.menus.date);
+	console.log(date);
+	let dateString = String(monthString[date.getMonth()]) + ' ' + String(date.getFullYear());
 
-	const totalRecipe = (tempDate.getDate() + 1) * 15;
+	let listMonth: boolean[][] = new Array<boolean[]>(date.getDate());
 
-	for (let d = 0; d < tempDate.getDate(); d++) {
+	const menuRecipe: string[][][] = new Array<string[][]>(date.getDate());
+	const menuShifts = data.menus.dr_menu_shift;
+
+	for (let d = 0; d < date.getDate(); d++) {
 		menuRecipe[d] = new Array<string[]>(3);
+		listMonth[d] = new Array<boolean>(4);
 		for (let s = 0; s < 3; s++) {
 			const menuShift = menuShifts.find(
 				(shift: any) => shift.day === d + 1 && shift.shift_cat === s + 1
 			);
 			menuRecipe[d][s] = new Array<string>(5);
+			listMonth[d][s + 1] = menuShift.is_approved;
 			if (menuShift.dr_menu_shift_recipes.length > 0) {
 				for (let r = 0; r < 5; r++) {
 					const recipeId = menuShift.dr_menu_shift_recipes.find(
@@ -55,80 +53,45 @@
 					if (recipeId) {
 						const recipe = data.recipes.find((recipe: any) => recipe.id === recipeId.recipe_id);
 						menuRecipe[d][s][r] = recipe.name + '-' + String(number3DigitFormat(recipe.id));
-						console.log(menuRecipe[d][s][r] )
+						console.log(menuRecipe[d][s][r]);
 					}
 				}
 			}
 		}
 	}
 
-	function is_full(): boolean {
-		let filled = 0;
-		for (let d = 0; d < tempDate.getDate(); d++) {
-			menuRecipe[d] = new Array<string[]>(3);
-			for (let s = 0; s < 3; s++) {
-				const menuShift = menuShifts.find(
-					(shift: any) => shift.day === d + 1 && shift.shift_cat === s + 1
-				);
-				menuRecipe[d][s] = new Array<string>(5);
-				if (menuShift.dr_menu_shift_recipes.length > 0) {
-					for (let r = 0; r < 5; r++) {
-						const recipeId = menuShift.dr_menu_shift_recipes.find(
-							(recipe: any) => recipe.index === r
-						);
-						if (recipeId) {
-							const recipe = data.recipes.find((recipe: any) => recipe.id === recipeId.recipe_id);
-							menuRecipe[d][s][r] = recipe.name + '-' + String(number3DigitFormat(recipe.id));
-							filled++;
-						}
-					}
-				}
-			}
-		}
-		return filled === totalRecipe;
+	let choosenMonth: Date,
+		arrayDaysMenu = [,],
+		showList = false,
+		dateArr: Array<string>;
+
+	let errorMessage = {
+		show: false,
+		message: ''
+	};
+
+	function getDays() {
+		let dateString = choosenMonth.toString();
+		dateArr = dateString.split('-');
+		let d = new Date(parseInt(dateArr[0]), parseInt(dateArr[1]), 0);
+		arrayDaysMenu.length = d.getDate();
+		showList = true;
 	}
 
-	function submitHandler() {
-		errorMessage.show = false;
-
-		// if (listOut.length < 1) {
-		// 	errorMessage.show = true;
-		// 	errorMessage.message = 'Anda belum memilih bahan baku!';
-		// } else {
-		setDialogue('Ajukan Menu?', 'Apakah Anda Yakin mengajukan menu?');
-		dialogueOpen.set(true);
-		let timeIn = setInterval(() => {
-			if (!$dialogueOpen) {
-				clearInterval(timeIn);
-				switch ($dialogueValue) {
-					case true: {
-						goto('../menu');
-						showMessage('Menu Berhasil Diajukan!');
-					}
-					case false: {
-						console.log('dialog batal cancel');
-					}
-				}
-			}
-		}, 200);
-		// }
-	}
-
-	const saveHandler: SubmitFunction = ({ cancel }) => {
+	const submitHandler: SubmitFunction = () => {
 		errorMessage.show = false;
 
 		return async ({ result }) => {
-			if (result.type === 'success') {
-				showMessage('Menu Berhasil Disimpan!');
-				window.location.reload();
-			}
+			goto('../');
+			navigationBlocked.set(false);
+			showMessage('Menu Berhasil Diubah!');
 		};
 
 		// if (listOut.length < 1) {
 		// 	errorMessage.show = true;
 		// 	errorMessage.message = 'Anda belum memilih bahan baku!';
 		// } else {
-		// setDialogue('Simpan Menu?', 'Apakah Anda Yakin menyimpan menu?');
+		// setDialogue('Edit Menu?', 'Apakah Anda Yakin mengubah menu?');
 		// dialogueOpen.set(true);
 		// let timeIn = setInterval(() => {
 		// 	if (!$dialogueOpen) {
@@ -136,7 +99,7 @@
 		// 		switch ($dialogueValue) {
 		// 			case true: {
 		// 				goto('../menu');
-		// 				showMessage('Menu Berhasil Disimpan!');
+		// 				showMessage('Menu Berhasil Diubah!');
 		// 			}
 		// 			case false: {
 		// 				console.log('dialog batal cancel');
@@ -148,14 +111,14 @@
 	};
 
 	function cancelHandler() {
-		setDialogue('Keluar?', 'Pastikan data yang dimasukkan telah disimpan');
+		setDialogue('Batal Edit Menu?', 'Data yang dimasukkan tidak akan disimpan');
 		dialogueOpen.set(true);
 		let timeIn = setInterval(() => {
 			if (!$dialogueOpen) {
 				clearInterval(timeIn);
 				switch ($dialogueValue) {
 					case true: {
-						goto('../menu');
+						goto('../');
 						navigationBlocked.set(false);
 					}
 					case false: {
@@ -169,29 +132,40 @@
 
 <main class="mx-auto h-screen flex flex-col bg-slate-100 p-5">
 	<div class="font-['Helvetica Neue] w-full text-2xl text-primary font-black ml-2">
-		<h1>MENU {monthString[tempDate.getMonth()].toUpperCase()} {tempDate.getFullYear()}</h1>
+		<h1>EDIT MENU DINING ROOM</h1>
 	</div>
-	<form method="POST" action="?/save" use:enhance={saveHandler}>
+	<form method="POST" action="?/edit" use:enhance={submitHandler}>
 		<div class="mt-2 flex w-full">
-			<button class="btn btn-outline font-bold btn-sm btn-primary ml-2"
-				>{monthString[tempDate.getMonth()]}-{tempDate.getFullYear()}</button
-			>
+			<input
+				type="texth"
+				readonly
+				class="input input-bordered input-sm input-primary ml-2 bg-slate-100 text-primary text-center font-bold"
+				bind:value={dateString}
+				on:change={() => getDays()}
+			/>
 			<div class="grow" />
-			<button class="btn btn-outline font-bold btn-sm btn-error" on:click={cancelHandler} type="button"
-				>KELUAR</button
+			<button
+				class="btn btn-outline font-bold btn-sm btn-error"
+				on:click={cancelHandler}
+				type="button">BATAL</button
 			>
-			<button class="btn btn-outline font-bold btn-sm btn-primary ml-2" type="submit">SIMPAN</button
-			>
-			<button class="btn font-bold btn-sm btn-primary ml-2" disabled={!is_full()}>AJUKAN</button>
+			<button class="btn font-bold btn-sm btn-primary ml-2" type="submit">UBAH</button>
+			<!-- 
+		<button class="btn font-bold btn-sm btn-primary ml-2">
+			<a href="./recipe/add">AJUKAN</a></button
+		> -->
 		</div>
-		<div class="overflow-y-scroll w-full mt-2 text-slate-50 max-h-[42rem]">
+		<div class="overflow-x-auto w-full mt-2">
 			<table class="table w-full table-compact table-zebra">
 				<!-- head -->
 				<thead class="sticky top-0 text-slate-100">
 					<tr>
-						<th class="text-center">Tanggal</th>
+						<th>Tanggal</th>
+						<th />
 						<th>PAGI</th>
+						<th />
 						<th>SIANG</th>
+						<th />
 						<th>MALAM</th>
 					</tr>
 				</thead>
@@ -199,8 +173,17 @@
 					<!-- row -->
 					{#each menuRecipe as day, d}
 						<tr>
-							<td class="text-center">{d + 1}</td>
+							<td class="text-center font-bold">{d + 1}</td>
 							{#each menuRecipe[d] as shift, s}
+								<td>
+									<input
+										type="checkbox"
+										class="checkbox bg-slate-100"
+										disabled={true}
+										bind:checked={listMonth[d][s + 1]}
+										name="checked-{String(d)}-{String(s + 1)}"
+									/>
+								</td>
 								<td>
 									<div class="flex flex-col gap-1">
 										{#each menuRecipe[d][s] as _, r}
@@ -208,6 +191,7 @@
 												class="select w-full select-sm select-bordered max-w-xs text-xs text-slate-300"
 												name="recipes-{String(d)}-{String(s)}"
 												value={menuRecipe[d][s][r] ? menuRecipe[d][s][r] : 'RESEP ' + String(r + 1)}
+												disabled={listMonth[d][s + 1]}
 											>
 												<option disabled selected>RESEP {r + 1}</option>
 												{#each recipes as recipe}

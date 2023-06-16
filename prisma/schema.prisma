@@ -42,22 +42,25 @@ model dr_menu {
 }
 
 model dr_menu_shift {
-  id                    Int                     @id @default(autoincrement())
+  id                    Int                     @id @unique @default(autoincrement())
   menu_id               Int
   shift_cat             Int
   is_approved           Boolean
   day                   Int
   dr_menu               dr_menu                 @relation(fields: [menu_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   dr_menu_shift_recipes dr_menu_shift_recipes[]
+
+  @@unique([menu_id, shift_cat, day])
 }
 
 model dr_menu_shift_recipes {
   shift_id      Int
   recipe_id     Int
+  index         Int
   dr_menu_shift dr_menu_shift @relation(fields: [shift_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   dr_recipe     dr_recipe     @relation(fields: [recipe_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
-  @@id([shift_id, recipe_id])
+  @@id([shift_id, index])
 }
 
 model dr_modal {
@@ -93,17 +96,17 @@ model dr_recipe_ingredients {
 }
 
 model dr_report {
-  id                   Int                 @id @default(autoincrement())
-  saldo                Decimal             @db.Money
-  action               Int
-  created_date         DateTime?            @db.Date
-  modal_id             Int?
-  modal_total          Decimal?
-  payment_id           Int?
-  payment_total        Decimal?
-  note String?
-  dr_modal             dr_modal?           @relation(fields: [modal_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  dr_restock_payment   dr_restock_payment? @relation(fields: [payment_id], references: [id])
+  id                 Int                 @id @default(autoincrement())
+  saldo              Decimal             @db.Money
+  action             Int
+  created_date       DateTime?           @db.Date
+  modal_id           Int?
+  modal_total        Decimal?
+  payment_id         Int?
+  payment_total      Decimal?
+  note               String?
+  dr_modal           dr_modal?           @relation(fields: [modal_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  dr_restock_payment dr_restock_payment? @relation(fields: [payment_id], references: [id])
 }
 
 model dr_restock {

@@ -1,6 +1,8 @@
 import { fail, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
-import type { dr_menu_shift, dr_menu, Prisma } from "@prisma/client";
+import type { dr_menu, Prisma } from "@prisma/client";
+
+let nextMenu: dr_menu | null;
 
 export const load: PageServerLoad = async ({ cookies }) => {
     // console.log(cookies.getAll())
@@ -24,7 +26,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
     })
 
     const recipes = await prisma.dr_recipe.findMany({
-        orderBy:{
+        orderBy: {
             name: 'asc'
         }
     })
@@ -37,15 +39,24 @@ export const load: PageServerLoad = async ({ cookies }) => {
     const nextDate = new Date(((thisMonth + 1) === 12 ? (thisYear + 1) : thisYear), ((thisMonth + 1) === 12 ? 0 : (thisMonth + 1)), 0)
     console.log('nextDate: ' + nextDate)
 
-    let nextMenu: dr_menu | null, menuShift;
-
     try {
         nextMenu = await prisma.dr_menu.findUnique({
             where: {
                 date: nextDate,
             },
             include: {
-                dr_menu_shift: true,
+                dr_menu_shift: {
+                    orderBy:{
+                        day: 'asc'
+                    },
+                    include:{
+                        dr_menu_shift_recipes:{
+                            orderBy:{
+                                index: 'asc'
+                            }
+                        }
+                    }
+                }
             }
         })
     } catch (error) {
@@ -97,25 +108,59 @@ export const load: PageServerLoad = async ({ cookies }) => {
             return fail(500, { message: 'Gagal membuat menu!' })
         }
 
+        try {
+            nextMenu = await prisma.dr_menu.findUnique({
+                where: {
+                    date: nextDate,
+                },
+                include: {
+                    dr_menu_shift: {
+                        orderBy:{
+                            day: 'asc'
+                        },
+                        include:{
+                            dr_menu_shift_recipes:{
+                                orderBy:{
+                                    index: 'asc'
+                                }
+                            }
+                        }
+                    }
+                }
+            })
+        } catch (error) {
+            return fail(500, { message: 'Gagal membuat menu!' })
+        }
+
     }
 
-    try {
-        menuShift = await prisma.dr_menu_shift.groupBy({
-            by: ['day'],
-            orderBy: {
-                day: 'asc'
-            }
-        })
-    } catch (error) {
-        return fail(500, { message: 'Gagal membuat menu!' })
-    }
+
+    // let shiftMenu;
+    // try {
+    //     shiftMenu = await prisma.dr_menu_shift.findMany({
+    //         orderBy: {
+    //             day: 'asc'
+    //         },
+    //         include:{
+    //             dr_menu_shift_recipes:{
+    //                 orderBy:{
+    //                     index: 'asc'
+    //                 }
+    //             }
+    //         }
+    //     })
+    // } catch (error) {
+    //     return fail(500, { message: 'Gagal membuat menu!' })
+    // }
 
     // menuShift.forEach((e:any)=>{
     //     console.log(e)
     // })
 
+    // console.log(nextMenu.dr_menu_shift)
 
-    return { user: JSON.parse(JSON.stringify(user)), nextMenu: JSON.parse(JSON.stringify(nextMenu)), recipes: JSON.parse(JSON.stringify(recipes)) }
+
+    return { user: JSON.parse(JSON.stringify(user)), nextMenu: JSON.parse(JSON.stringify(nextMenu)), recipes: JSON.parse(JSON.stringify(recipes))}
 };
 
 export const actions: Actions = {
@@ -124,10 +169,65 @@ export const actions: Actions = {
 
         for (let d = 0; d < 2; d++) {
             for (let s = 0; s < 3; s++) {
-                const value = formData.getAll('recipe-'+String(d)+'-'+String(s))
-                console.log('recipe-'+String(d)+'-'+String(s))
-                console.log(value)
+                const shift = await prisma.dr_menu_shift.upsert({
+                    where: {
+                        menu_id_shift_cat_day: {
+                            menu_id: nextMenu!.id,
+                            shift_cat: s+1,
+                            day: d+1
+                        }
+                    }, create: {
+                        menu_id: nextMenu!.id,
+                        shift_cat: s+1,
+                        day: d+1,
+                        is_approved: false
+                    },
+                    update: {}
+                })
+                const value = formData.getAll('recipes-' + String(d) + '-' + String(s))
+                // console.log('recipes-' + String(d) + '-' + String(s))
+                // console.log(value)
+                value.forEach(async(e:any, i:number) => {
+                    console.log(e)
+                    const valArray = e.split('-')
+                    try {
+                        await prisma.dr_menu_shift_recipes.upsert({
+                            where:{
+                                shift_id_index:{
+                                    shift_id: shift.id,
+                                    index: i
+                                }
+                            },
+                            create:{
+                                shift_id: shift.id,
+                                recipe_id: +valArray[1],
+                                index: i
+                            },
+                            update:{
+                                recipe_id: +valArray[1]
+                            }
+                        })
+                    } catch (error) {
+                        return fail(500, { message: 'Gagal menyimpan menu!' })
+                    }
+                })
             }
         }
+    },
+
+    submitted:async () => {
+        try {
+            await prisma.dr_menu.update({
+                where:{
+                    id: nextMenu!.id
+                },
+                data:{
+                    is_submited: true
+                }
+            })
+        } catch (error) {
+            return fail(500, { message: 'Gagal mengajukan menu!' })
+        }
+        return {type: 'success'}
     }
 };
