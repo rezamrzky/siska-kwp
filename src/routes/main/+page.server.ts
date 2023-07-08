@@ -5,17 +5,19 @@ import { fail, redirect } from "@sveltejs/kit";
 let iUser: user | null;
 
 export const load: PageServerLoad = async ({ cookies }) => {
-    if(cookies.get('session')){
-    const user = await prisma.user.findFirst({
-        where: {
-            authToken: cookies.get('session')
-        }
-    })
-    iUser = user;
-    return { user: JSON.parse(JSON.stringify(user)) }
-} else {
-    throw redirect(301, '/')
-}
+    if (cookies.get('session')) {
+        console.log(cookies.get('session'))
+        const user = await prisma.user.findFirst({
+            where: {
+                authToken: cookies.get('session')
+            }
+        })
+        console.log(user)
+        iUser = user;
+        return { user: JSON.parse(JSON.stringify(user)) }
+    } else {
+        throw redirect(301, '/')
+    }
 };
 
 export const actions: Actions = {
@@ -25,7 +27,7 @@ export const actions: Actions = {
         try {
             await prisma.user.update({
                 where: {
-                    id: iUser?.id,
+                    id: iUser!.id,
                 },
                 data: {
                     authToken: null
@@ -41,7 +43,7 @@ export const actions: Actions = {
             expires: new Date(0),
         })
 
-        
+        throw redirect(301, '/main')
 
     }
 };

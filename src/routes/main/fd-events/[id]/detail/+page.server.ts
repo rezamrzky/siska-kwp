@@ -79,13 +79,13 @@ export const actions: Actions = {
     });
 
     try {
-      await prisma.fd_event_payment.create({
+    payment =  await prisma.fd_event_payment.create({
         data: {
           date: date,
           total: total,
           proof_name: fileName,
           confirmed_by: user!.staff.name,
-          confirmed_date: today
+          confirmed_date: today,
         }
       })
     } catch (error) {
@@ -93,13 +93,14 @@ export const actions: Actions = {
     }
 
     try {
-     payment =  await prisma.fd_event.update({
+     await prisma.fd_event.update({
         where: {
           id: event!.id
         },
         data: {
           status: 'Pembayaran',
-          total_price: total
+          total_price: total,
+          payment_id: payment!.id
         }
       })
     } catch (error) {

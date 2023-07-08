@@ -38,11 +38,11 @@
 	const menuRecipe: string[][][] = new Array<string[][]>(tempDate.getDate());
 	const menuShifts = data.nextMenu.dr_menu_shift;
 
-	const totalRecipe = (tempDate.getDate() + 1) * 15;
+	const totalRecipe = (tempDate.getDate()) * 10;
 
 	for (let d = 0; d < tempDate.getDate(); d++) {
-		menuRecipe[d] = new Array<string[]>(3);
-		for (let s = 0; s < 3; s++) {
+		menuRecipe[d] = new Array<string[]>(2);
+		for (let s = 0; s < 2; s++) {
 			const menuShift = menuShifts.find(
 				(shift: any) => shift.day === d + 1 && shift.shift_cat === s + 1
 			);
@@ -65,8 +65,8 @@
 	function is_full(): boolean {
 		let filled = 0;
 		for (let d = 0; d < tempDate.getDate(); d++) {
-			menuRecipe[d] = new Array<string[]>(3);
-			for (let s = 0; s < 3; s++) {
+			menuRecipe[d] = new Array<string[]>(2);
+			for (let s = 0; s < 2; s++) {
 				const menuShift = menuShifts.find(
 					(shift: any) => shift.day === d + 1 && shift.shift_cat === s + 1
 				);
@@ -88,34 +88,26 @@
 		return filled === totalRecipe;
 	}
 
-	function submitHandler() {
+	const submitHandler: SubmitFunction = ({ cancel }) => {
 		errorMessage.show = false;
 
 		// if (listOut.length < 1) {
 		// 	errorMessage.show = true;
 		// 	errorMessage.message = 'Anda belum memilih bahan baku!';
 		// } else {
-		setDialogue('Ajukan Menu?', 'Apakah Anda Yakin mengajukan menu?');
-		dialogueOpen.set(true);
-		let timeIn = setInterval(() => {
-			if (!$dialogueOpen) {
-				clearInterval(timeIn);
-				switch ($dialogueValue) {
-					case true: {
-						goto('../menu');
-						showMessage('Menu Berhasil Diajukan!');
-					}
-					case false: {
-						console.log('dialog batal cancel');
-					}
-				}
+			return async ({ result }) => {
+			if (result.type === 'success') {
+				showMessage('Menu Berhasil Diajukan!');
+				goto('../menu');
+						navigationBlocked.set(false);
 			}
-		}, 200);
+		};
 		// }
 	}
 
 	const saveHandler: SubmitFunction = ({ cancel }) => {
 		errorMessage.show = false;
+		is_full()
 
 		return async ({ result }) => {
 			if (result.type === 'success') {
@@ -182,16 +174,18 @@
 			>
 			<button class="btn btn-outline font-bold btn-sm btn-primary ml-2" type="submit">SIMPAN</button
 			>
+			<form method="POST" action="?/submitted" use:enhance={submitHandler}>
 			<button class="btn font-bold btn-sm btn-primary ml-2" disabled={!is_full()}>AJUKAN</button>
+		</form>
 		</div>
 		<div class="overflow-y-scroll w-full mt-2 text-slate-50 max-h-[42rem]">
 			<table class="table w-full table-compact table-zebra">
 				<!-- head -->
 				<thead class="sticky top-0 text-slate-100">
-					<tr>
-						<th class="text-center">Tanggal</th>
-						<th>PAGI</th>
-						<th>SIANG</th>
+					<tr  class="text-center">
+						<th>Tanggal</th>
+						<!-- <th>PAGI</th> -->
+						<th>SORE</th>
 						<th>MALAM</th>
 					</tr>
 				</thead>

@@ -24,6 +24,9 @@ export const load: PageServerLoad = async ({ cookies }) => {
     const restocks = await prisma.dr_restock.findMany({
         orderBy:{
             created_at: 'desc'
+        },
+        include:{
+            dr_restock_payment: true
         }
     })
 

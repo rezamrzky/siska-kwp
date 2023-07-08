@@ -136,7 +136,7 @@
 <main>
 	<section class="place-content-center w-full h-screen drop-shadow-2xl rounded p-5 text-slate-700">
 		<div class="w-full h-full bg-slate-100 rounded p-5">
-			<h2 class="font-['Helvetica Neue'] font-black text-2xl text-primary">EDIT PROFIL PEGAWAI</h2>
+			<h2 class="font-['Helvetica Neue'] font-black text-2xl text-primary">EDIT PROFIL KARYAWAN</h2>
 			<p>Silahkan mengubah informasi pegawai melalui form dibawah:</p>
 			<form class="h-[42rem] py-2" method="POST" use:enhance={submitHandler} action="?/editStaff">
 				<div class="h-[36rem] overflow-y-scroll">

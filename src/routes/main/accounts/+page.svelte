@@ -220,22 +220,22 @@
 			<!-- head -->
 			<thead class="sticky top-0 text-slate-100 z-10">
 				<tr>
-					<th>Username</th>
+					<th class="text-center text-ml">Username</th>
 					<th class="text-center text-ml">Nama </th>
 					<th class="text-center text-ml">Login Terakhir</th>
 					<th class="text-center text-ml">Status</th>
 					<th class="text-right" />
 				</tr>
 			</thead>
-			<tbody>
+			<tbody class="text-slate-200">
 				<!-- row -->
 				<!-- {#each Array(10) as _, i} -->
-				{#each shownData as user}
+				{#each shownData as user, i}
 					{#if user.staff.name.toLowerCase().includes(searchedName.toLowerCase())}
 						{#if isFilter === true && filterBy === user.staff.department}
 							<tr>
-								<td
-									><div class="font-bold">{user.username}</div>
+								<td class="text-center text-ml"
+									><div class="font-bold ">{user.username}</div>
 									{#if !user.last_login}
 										<span class="badge badge-secondary badge-sm"
 											>password: {createPassword(user.staff)}</span
@@ -284,7 +284,7 @@
 							</tr>
 						{:else if isFilter === false && filterBy === ''}
 							<tr>
-								<td
+								<td class="text-center text-ml"
 									><div class="font-bold">{user.username}</div>
 									{#if !user.last_login}
 										<span class="badge badge-warning badge-sm">password: {createPassword(user.staff)}</span>

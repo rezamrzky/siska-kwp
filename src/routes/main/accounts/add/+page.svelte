@@ -116,14 +116,14 @@
 								<th class="text-right" />
 							</tr>
 						</thead>
-						<tbody>
+						<tbody class="text-slate-200">
 							<!-- row -->
 							{#each staffs as pegawai, i}
 								<tr>
 									<td class="font-bold"> {pegawai.name} </td>
 									<td class="text-center"
 										><div class="font-bold">{pegawai.department}</div>
-										<span class="badge badge-ghost badge-sm">{pegawai.position}</span>
+										<span class="badge badge-primary badge-sm">{pegawai.position}</span>
 									</td>
 									<td class="text-right">
 										<input

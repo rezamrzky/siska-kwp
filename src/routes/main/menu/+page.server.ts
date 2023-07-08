@@ -98,7 +98,7 @@ export const actions: Actions = {
         console.log(menu)
         
         for (let d = 0; d < 31; d++) {
-            for (let s = 0; s < 3; s++) {
+            for (let s = 0; s < 2; s++) {
                 const checkedData = formData.get("checked-"+String(d)+"-"+String(s+1))
                 console.log(checkedData)
                 const shift = await prisma.dr_menu_shift.update({

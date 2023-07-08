@@ -77,8 +77,8 @@ export const actions: Actions = {
     edit: async ({ request }) => {
         const formData = await request.formData()
 
-        for (let d = 0; d < 2; d++) {
-            for (let s = 0; s < 3; s++) {
+        for (let d = 0; d < choosenDate.getDate(); d++) {
+            for (let s = 0; s < 2; s++) {
                 const shift = await prisma.dr_menu_shift.upsert({
                     where: {
                         menu_id_shift_cat_day: {

@@ -399,6 +399,6 @@
 
 <dialog bind:this={dialog} on:close={() => console.log('closed')} class='bg-slate-50 text-slate-700'>
 	<button class="link link-hover text-error text-end text-xl w-full" on:click={() => dialog.close()}>&#9746;</button>
-	This is amazingly simple! (press esc to close)
+	<b>{data.payment.proof_name}</b>
 	<img src={data.url} alt="proof-bill-pict"/>
 </dialog>

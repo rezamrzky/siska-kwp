@@ -2,8 +2,7 @@ import type { PageServerLoad } from "./$types";
 import { number3DigitFormat } from '$lib/Functions';
 import { minio } from "$lib/minio";
 import { fail, type Actions } from "@sveltejs/kit";
-import { Prisma, type dr_restock, type dr_restock_product, type dr_restock_product_confirm, type staff } from "@prisma/client";
-import { Decimal } from "@prisma/client/runtime";
+import { Prisma, type dr_restock, type dr_restock_product, type staff } from "@prisma/client";
 
 let restocks: (dr_restock & { staff: staff; }) | null, user: { username: string; status: string; staff: { name: string; department: string; position: string; phone_numb: string; id: string; }; } | null, products: { product_id: any; }[];
 const today = new Date();

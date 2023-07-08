@@ -180,10 +180,10 @@
 							<th>Nomor</th>
 							<th>Produk</th>
 							<th>Bahan Baku</th>
-							<th class="text-center">Stok</th>
+							<th class="text-center">Stok<br>Produk</th>
 							<th />
-							<th class="text-center">Kebutuhan</th>
-							<th />
+							<!-- <th class="text-center">Stok<br>Bahan Baku</th> -->
+							<!-- <th /> -->
 							<th class="text-right">Kuantitas</th>
 							<th />
 						</tr>
@@ -204,8 +204,8 @@
 										<td class="text-center">{product.dr_ingredient.name}</td>
 										<td class="text-center">{product.stock} </td>
 										<td class="text-left">{product.product_unit}</td>
-										<td class="text-center">999 </td>
-										<td class="text-left">satuan</td>
+										<!-- <td class="text-center">{product.dr_ingredient.stock}</td> -->
+										<!-- <td class="text-left">{product.dr_ingredient.unit}</td> -->
 										<td class="text-right">
 											<input
 												class="input input-bordered w-fit bg-slate-100 text-right input-sm text-slate-700"

@@ -51,7 +51,7 @@ export const actions: Actions = {
         // console.log('password: '+password)
 
         if (user.status === 'Beku') {
-            return fail(400, { message: 'Akses ditolak, hubungi Manajer KWP untuk informasi lebih lanjut.' });
+            return fail(400, { message: 'Akses ditolak, hubungi Manajer Catering Jasmine KWP untuk informasi lebih lanjut.' });
         }
 
         const userPass = await bcrypt.compare(password, user.password);

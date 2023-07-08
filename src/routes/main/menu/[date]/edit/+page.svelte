@@ -37,9 +37,9 @@
 	const menuShifts = data.menus.dr_menu_shift;
 
 	for (let d = 0; d < date.getDate(); d++) {
-		menuRecipe[d] = new Array<string[]>(3);
+		menuRecipe[d] = new Array<string[]>(2);
 		listMonth[d] = new Array<boolean>(4);
-		for (let s = 0; s < 3; s++) {
+		for (let s = 0; s < 2; s++) {
 			const menuShift = menuShifts.find(
 				(shift: any) => shift.day === d + 1 && shift.shift_cat === s + 1
 			);
@@ -155,14 +155,14 @@
 			<a href="./recipe/add">AJUKAN</a></button
 		> -->
 		</div>
-		<div class="overflow-x-auto w-full mt-2">
+		<div class="overflow-y-scroll max-h-[44rem] w-full mt-2">
 			<table class="table w-full table-compact table-zebra">
 				<!-- head -->
-				<thead class="sticky top-0 text-slate-100">
+				<thead class="sticky top-0 text-slate-100 z-50">
 					<tr>
 						<th>Tanggal</th>
-						<th />
-						<th>PAGI</th>
+						<!-- <th />
+						<th>PAGI</th> -->
 						<th />
 						<th>SIANG</th>
 						<th />

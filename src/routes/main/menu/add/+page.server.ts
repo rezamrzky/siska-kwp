@@ -1,6 +1,7 @@
 import { fail, type Actions } from "@sveltejs/kit";
 import type { PageServerLoad } from "./$types";
 import type { dr_menu, Prisma } from "@prisma/client";
+import { getRequest } from "@sveltejs/kit/node";
 
 let nextMenu: dr_menu | null;
 
@@ -83,7 +84,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
         let shift_pointer = 1;
         let day_pointer = 1
 
-        for (let i = 0; i < (nextDate.getDate() * 3); i++) {
+        for (let i = 0; i < (nextDate.getDate() * 2); i++) {
             msList.push({
                 menu_id: nextMenu!.id,
                 shift_cat: shift_pointer,
@@ -91,7 +92,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
                 day: day_pointer
             })
 
-            if (shift_pointer === 3) {
+            if (shift_pointer === 2) {
                 shift_pointer = 1;
                 day_pointer++;
             } else {
@@ -167,8 +168,8 @@ export const actions: Actions = {
     save: async ({ request }) => {
         const formData = await request.formData()
 
-        for (let d = 0; d < 2; d++) {
-            for (let s = 0; s < 3; s++) {
+        for (let d = 0; d < nextMenu!.date.getDate(); d++) {
+            for (let s = 0; s < 2; s++) {
                 const shift = await prisma.dr_menu_shift.upsert({
                     where: {
                         menu_id_shift_cat_day: {
@@ -216,6 +217,7 @@ export const actions: Actions = {
     },
 
     submitted:async () => {
+
         try {
             await prisma.dr_menu.update({
                 where:{

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { formatDate } from '$lib/Functions';
+	import { formatDate, number3DigitFormat } from '$lib/Functions';
 	import type { PageData } from './$types';
 
 	export let data: PageData;
@@ -294,7 +294,7 @@
 					<th>Admin</th>
 					{/if}
 					<th>Status</th>
-					<th>Jumlah Porsi</th>
+					<th>Vendor</th>
 					<th />
 				</tr>
 			</thead>
@@ -307,7 +307,7 @@
 						{:else}
 							<td />
 						{/if}
-						<td> {event.id} </td>
+						<td> {number3DigitFormat(event.id)} </td>
 						<td> {formatDate(event.event_date)} </td>
 						<td> {event.department} </td>
 						{#if data.user.staff.department === 'Food & Drink'}
@@ -316,7 +316,7 @@
 						<td> {event.staff.name} </td>
 						{/if}
 						<td class='{statusColor(event.status)} font-semibold'>{event.status}</td>
-						<td>{event.total_pax}</td>
+						<td><b>{event.vendor}</b>, {event.total_pax} porsi</td>
 						<td>
 							<button
 								class="flex-none btn btn-outline font-bold btn-xs btn-white"

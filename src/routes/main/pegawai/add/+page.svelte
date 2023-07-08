@@ -100,7 +100,7 @@
 <main>
 	<section class="place-content-center w-full h-screen drop-shadow-2xl p-5 text-slate-700">
 		<div class="w-full h-full bg-slate-100 rounded p-5">
-			<h2 class="font-['Helvetica Neue'] font-black text-2xl text-primary">TAMBAH PEGAWAI</h2>
+			<h2 class="font-['Helvetica Neue'] font-black text-2xl text-primary">TAMBAH KARYAWAN</h2>
 			<p>Silahkan mengisi informasi pegawai melalui form dibawah:</p>
 			<!-- <form class="h-[42rem] py-2" on:submit|preventDefault={submitHandler} method="POST"> -->
 			<form class="h-[42rem] py-2" method="POST" use:enhance={submitHandler}>
