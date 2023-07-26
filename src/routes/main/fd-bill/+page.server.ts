@@ -24,8 +24,10 @@ export const load: PageServerLoad = async ({ cookies }) => {
     const bills = await prisma.fd_bill.findMany({
       orderBy:{
         id: 'desc',
-      }
-    })
+      },
+      include:{
+        fd_bill_payment: true
+    }})
   
     return { user: JSON.parse(JSON.stringify(user)), bills: JSON.parse(JSON.stringify(bills)) }
   };

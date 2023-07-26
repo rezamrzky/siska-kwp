@@ -5,7 +5,7 @@ import { prisma } from "$lib/prisma";
 export const load = (async({ params: {id}}) => {
     const staff = await prisma.staff.findFirst({
         where: {
-            id: id
+            id: id,
         }
     })
 
@@ -15,9 +15,17 @@ export const load = (async({ params: {id}}) => {
 export const actions: Actions = {
     delete: async ({ params: {id}}) => {
         try {
-            await prisma.staff.delete({
+            await prisma.staff.update({
                 where: {
                     id: id
+                },
+                data:{
+                    is_blocked: true,
+                    user:{
+                        update:{
+                            status: 'Beku'
+                        }
+                    }
                 }
             })
         } catch(err) {

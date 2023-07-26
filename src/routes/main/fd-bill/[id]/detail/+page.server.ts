@@ -3,7 +3,7 @@ import type { PageServerLoad } from "./$types";
 import { fail, type Actions } from "@sveltejs/kit";
 
 let iBill: (fd_bill & { fd_event: fd_event[]; }) | null;
-let iUser;
+let iUser: { staff: { id: string; name: string; department: string; position: string; phone_numb: string; }; status: string; username: string; } | null;
 const now = new Date()
 
 export const load: PageServerLoad = async ({ cookies, params: { id } }) => {
@@ -76,9 +76,9 @@ export const actions: Actions = {
         data:{
           date: date,
           total: total,
-          confirm_by: iUser.staff.id,
+          confirm_by: iUser!.staff.id,
           confirm_date: now,
-          bill_id: iBill.id
+          bill_id: iBill!.id
         }
       })
     } catch (error) {
@@ -88,7 +88,7 @@ export const actions: Actions = {
     const bill_payments = await prisma.fd_bill_payment.groupBy({
       by: ['bill_id'],
       where: {
-        bill_id: iBill.id
+        bill_id: iBill!.id
       },
       _sum:{
         total: true,
@@ -97,11 +97,11 @@ export const actions: Actions = {
 
     const total_payments = bill_payments[0]._sum.total;
 
-    if(+iBill.total_after_tax <= +total_payments){
+    if(+iBill!.total_after_tax <= +total_payments!){
       try{
         await prisma.fd_bill.update({
           where: {
-            id: iBill.id,
+            id: iBill!.id,
           }, data: {
             status: 'Lunas'
           }
@@ -114,5 +114,74 @@ export const actions: Actions = {
     }
 
     return {type: 'success'}
+  },
+  edit_payment:async ({request}) => {
+    const formData = await request.formData()
+
+    const stringDate = String(formData.get('date'))
+    const date = new Date(stringDate);
+    const total = String(formData.get('total'))
+    const id = String(formData.get('id'))
+
+    console.log('date: '+date);
+    console.log('total: '+total);
+
+    try {
+      await prisma.fd_bill_payment.update({
+        where:{
+          id: +id
+        },
+        data:{
+          date: date,
+          total: total
+        }
+      })
+    } catch (error) {
+      return fail(500, {message: 'Gagal buat pembayaran!'})
+    }
+
+    const bill_payments = await prisma.fd_bill_payment.groupBy({
+      by: ['bill_id'],
+      where: {
+        bill_id: iBill!.id
+      },
+      _sum:{
+        total: true,
+      }
+    })
+
+    const total_payments = bill_payments[0]._sum.total;
+
+    if(+iBill!.total_after_tax <= +total_payments!){
+      try{
+        await prisma.fd_bill.update({
+          where: {
+            id: iBill!.id,
+          }, data: {
+            status: 'Lunas'
+          }
+        })
+      }
+      catch(error){
+        console.log(error)
+        return fail(500, {message: 'Gagal ubah status!'})
+      }
+    }
+
+    return {type: 'success'}
+  },
+  delete_payment: async ({request}) => {
+    const formData = await request.formData()
+
+    const id = String(formData.get('id'))
+    try {
+      await prisma.fd_bill_payment.delete({
+        where:{
+          id: +id
+        }
+      })
+    } catch (error) {
+      return fail(500, {message: 'Gagal buat pembayaran!'})
+    }
   }
 } satisfies Actions;

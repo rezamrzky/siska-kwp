@@ -29,6 +29,9 @@ export const load: PageServerLoad = async ({ cookies }) => {
     })
 
     const menus = await prisma.dr_menu.findMany({
+        where:{
+            is_submited: true
+        },
         orderBy: {
             date: 'desc',
         },
@@ -59,6 +62,8 @@ export const load: PageServerLoad = async ({ cookies }) => {
         lastMonth: lastDate!.getMonth(),
         lastYear: lastDate!.getFullYear()
     }
+
+    console.log(period)
 
     return { user: JSON.parse(JSON.stringify(user)), period: JSON.parse(JSON.stringify(period)), menus: JSON.parse(JSON.stringify(menus)), recipes: JSON.parse(JSON.stringify(recipes)) }
 };

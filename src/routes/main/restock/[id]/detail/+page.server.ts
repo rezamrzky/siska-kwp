@@ -148,7 +148,7 @@ export const actions: Actions = {
                     id: +id!
                 },
                 data: {
-                    status: 'Pembayaran'
+                    is_stock_confirmed: true,
                 }
             })
         } catch (error) {
@@ -238,7 +238,7 @@ export const actions: Actions = {
                     id: +id!
                 },
                 data: {
-                    is_stock_confirmed: true
+                    status: "Pembayaran"
                 }
             })
         } catch (error) {
@@ -350,5 +350,132 @@ export const actions: Actions = {
         }
 
         return { type: 'success' }
-    }
+    },
+
+    orderEdit: async ({ request }) => {
+        const formData = await request.formData()
+
+        const tempDate = String(formData.get('orderDate'))
+        const date = new Date(tempDate);
+        const total = String(formData.get('orderTotal'));
+        const id = String(formData.get('id'));
+        const bill = formData.get('orderProof') as Blob;
+        const buffer = Buffer.from(await bill.arrayBuffer());
+        const fileName = 'dr-order-bill-restock' + number3DigitFormat(restocks!.id) + '.jpg';
+
+        minio.putObject('siska-kwp', fileName, buffer, (err: any, objInfo: any) => {
+            if (err) {
+                console.log(err) // err should be null
+                return fail(500, { message: 'Gagal upload file!' })
+            }
+            // console.log("Success", objInfo)
+        });
+
+        if(bill.size === 0 || !bill){
+            try {
+                await prisma.dr_restock_bill.update({
+                    where:{
+                        id: +id
+                    },
+                    data: {
+                        date: date,
+                        total: +total
+                    }
+                })
+            } catch (error) {
+                console.log(error)
+                return fail(500, { message: 'Gagal konfirmasi pembayaran!' })
+            }
+        }else{
+            minio.putObject('siska-kwp', fileName, buffer, (err: any, objInfo: any) => {
+                if (err) {
+                    console.log(err) // err should be null
+                    return fail(500, { message: 'Gagal upload file!' })
+                }
+                // console.log("Success", objInfo)
+            });
+
+            try {
+                await prisma.dr_restock_bill.update({
+                    where:{
+                        id: +id
+                    },
+                    data: {
+                        date: date,
+                        total: +total,
+                        proof_name: fileName
+                    }
+                })
+            } catch (error) {
+                console.log(error)
+                return fail(500, { message: 'Gagal konfirmasi pembayaran!' })
+            }
+        }
+
+        return { type: 'success' }
+    },
+
+    paymentEdit: async ({ request }) => {
+        const formData = await request.formData()
+
+        const tempDate = String(formData.get('orderDate'))
+        const date = new Date(tempDate);
+        const total = String(formData.get('orderTotal'));
+        const id = String(formData.get('id'));
+        const bill = formData.get('orderProof') as Blob;
+        const buffer = Buffer.from(await bill.arrayBuffer());
+        const fileName = 'dr-order-bill-restock' + number3DigitFormat(restocks!.id) + '.jpg';
+
+        minio.putObject('siska-kwp', fileName, buffer, (err: any, objInfo: any) => {
+            if (err) {
+                console.log(err) // err should be null
+                return fail(500, { message: 'Gagal upload file!' })
+            }
+            // console.log("Success", objInfo)
+        });
+
+        if(bill.size === 0 || !bill){
+            try {
+                await prisma.dr_restock_payment.update({
+                    where:{
+                        id: +id
+                    },
+                    data: {
+                        date: date,
+                        total: +total
+                    }
+                })
+            } catch (error) {
+                console.log(error)
+                return fail(500, { message: 'Gagal konfirmasi pembayaran!' })
+            }
+        }else{
+            minio.putObject('siska-kwp', fileName, buffer, (err: any, objInfo: any) => {
+                if (err) {
+                    console.log(err) // err should be null
+                    return fail(500, { message: 'Gagal upload file!' })
+                }
+                // console.log("Success", objInfo)
+            });
+
+            try {
+                await prisma.dr_restock_payment.update({
+                    where:{
+                        id: +id
+                    },
+                    data: {
+                        date: date,
+                        total: +total,
+                        proof_name: fileName
+                    }
+                })
+            } catch (error) {
+                console.log(error)
+                return fail(500, { message: 'Gagal konfirmasi pembayaran!' })
+            }
+        }
+
+        return { type: 'success' }
+    },
+
 };

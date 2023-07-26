@@ -26,6 +26,7 @@ model dr_ingredient_product {
   quantity                   Decimal
   stock                      Decimal
   stock_date                 DateTime                     @db.Date
+  is_blocked                 Boolean?
   dr_ingredient              dr_ingredient                @relation(fields: [ingredient_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   dr_restock_product         dr_restock_product[]
   dr_restock_product_confirm dr_restock_product_confirm[]
@@ -221,10 +222,10 @@ model fd_event {
   event_date       DateTime          @db.Timestamp()
   event_place      String            @db.VarChar
   department       String            @db.VarChar
-  purpose          String
-  vendor           String            @db.VarChar
+  purpose          String?
+  vendor           String?           @db.VarChar
   total_pax        String            @db.VarChar
-  total_price      Decimal           @db.Money
+  total_price      Decimal?          @db.Money
   status           String            @db.VarChar
   staff_id         String            @db.VarChar
   created_at       DateTime          @db.Date
@@ -234,16 +235,28 @@ model fd_event {
   fd_bill          fd_bill?          @relation(fields: [bill_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   fd_event_payment fd_event_payment? @relation(fields: [payment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   staff            staff             @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  fd_event_order   fd_event_order[]
 }
 
 model fd_event_payment {
-  id             Int        @id(map: "fd_payment_pkey") @default(autoincrement())
-  date           DateTime   @db.Date
-  total          Decimal    @db.Money
-  proof_name     String     @db.VarChar
-  confirmed_by   String     @db.VarChar
-  confirmed_date DateTime   @db.Timestamptz(6)
+  id             Int             @id(map: "fd_payment_pkey") @default(autoincrement())
+  date           DateTime        @db.Date
+  total          Decimal         @db.Money
+  proof_name     String          @db.VarChar
+  confirmed_by   String          @db.VarChar
+  confirmed_date DateTime        @db.Timestamptz(6)
+  order_id       Int?            @unique
   fd_event       fd_event[]
+  fd_event_order fd_event_order? @relation(fields: [order_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model fd_event_order {
+  id               Int               @id @default(autoincrement())
+  event_id         Int
+  vendor           String            @db.VarChar()
+  total            Decimal           @db.Money
+  fd_event         fd_event          @relation(fields: [event_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  fd_event_payment fd_event_payment?
 }
 
 model staff {
@@ -262,6 +275,7 @@ model staff {
   bpjs_id            String               @unique @db.VarChar
   npwp               String               @unique @db.VarChar
   salary             Decimal              @db.Money
+  is_blocked         Boolean?
   dr_modal           dr_modal[]
   dr_recipe          dr_recipe[]
   dr_restock_bill    dr_restock_bill[]
@@ -274,12 +288,13 @@ model staff {
 }
 
 model user {
-  staff_id   String    @unique @db.VarChar
-  username   String    @unique @db.VarChar
-  password   String    @db.VarChar
-  last_login DateTime? @db.Date
-  status     String    @db.VarChar
-  id         String    @id @unique @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
-  authToken  String?   @db.Uuid
-  staff      staff     @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  staff_id      String    @unique @db.VarChar
+  username      String    @unique @db.VarChar
+  password      String    @db.VarChar
+  password_hint String?   @db.VarChar
+  last_login    DateTime? @db.Date
+  status        String    @db.VarChar
+  id            String    @id @unique @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  authToken     String?   @db.Uuid
+  staff         staff     @relation(fields: [staff_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }

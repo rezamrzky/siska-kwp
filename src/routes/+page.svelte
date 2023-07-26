@@ -1,28 +1,35 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
+	import { showMessage } from '$lib/Message.svelte';
 	import type { PageData, SubmitFunction } from './$types.js';
 
 	let hasError = false,
 		errMessage = '',
 		fusername = '',
-		fpassword = '';
+		fpassword = '',
+		errorMessage = {
+			show: false,
+			message: ''
+		},
+		forgetValue = '';
 
-	const submitHandler: SubmitFunction = ({cancel}) => {
-		
+	let dialogForget: any, dialogSuccess: any;
+
+	const submitHandler: SubmitFunction = ({ cancel }) => {
 		if (fusername == '' || fpassword == '') {
-			cancel()
+			cancel();
 			hasError = true;
 			errMessage = 'Semua kolom harus diisi!';
 			console.log('hasError: ' + hasError);
 			console.log('errMessage: ' + errMessage);
-		} 
-		
-		return async ({result}) => {
+		}
+
+		return async ({ result }) => {
 			if (
 				result.type == 'success'
 				// result.status == 201
-				) {
+			) {
 				goto('./main');
 			}
 
@@ -30,7 +37,45 @@
 				hasError = true;
 				errMessage = result.data?.message!;
 			}
+		};
+	};
+
+	const forgetHandler: SubmitFunction = ({ cancel }) => {
+		errorMessage.show = false;
+
+		if (forgetValue === '') {
+			cancel();
+			errorMessage.show = true;
+			errorMessage.message = 'Terdapat form yang belum diisi!';
 		}
+
+		return async ({ result }) => {
+			if (result.type === 'success') {
+				dialogForget.close();
+				dialogSuccess.showModal();
+				const timer = setTimeout(() => {
+					dialogSuccess.close();
+				}, 3000);
+			}
+		};
+		// else {
+		// 	setDialogue('Tambah Event?', 'Apakah Anda Yakin menambahkan event baru?');
+		// 	dialogueOpen.set(true);
+		// 	let timeIn = setInterval(() => {
+		// 		if (!$dialogueOpen) {
+		// 			clearInterval(timeIn);
+		// 			switch ($dialogueValue) {
+		// 				case true: {
+		// 					goto('../events');
+		// 					showMessage('Event Berhasil Ditambahkan!');
+		// 				}
+		// 				case false: {
+		// 					console.log('dialog batal cancel');
+		// 				}
+		// 			}
+		// 		}
+		// 	}, 200);
+		// }
 	};
 </script>
 
@@ -51,7 +96,7 @@
 					<p class="text-red-900 text-sm">{errMessage}</p>
 				</div>
 			{/if}
-				<form method="POST" use:enhance={submitHandler} action='?/login'>
+			<form method="POST" use:enhance={submitHandler} action="?/login">
 				<label class="labe font-semibold" for="fusernamee">Username</label>
 				<input
 					class="input input-bordered w-full bg-slate-100"
@@ -62,12 +107,70 @@
 				/>
 
 				<label class="label font-semibold" for="fpassword">Password</label>
-				<input class="input input-bordered w-full bg-slate-100" type="password" name="password" bind:value={fpassword}/>
+				<input
+					class="input input-bordered w-full bg-slate-100"
+					type="password"
+					name="password"
+					bind:value={fpassword}
+				/>
+				<button
+					class="link font-semibold text-primary hover:text-secondary"
+					type="button"
+					on:click={() => {
+						dialogForget.showModal();
+					}}>Lupa Password?</button
+				>
 				<div class="flex">
 					<div class="grow" />
-					<button class="btn btn-primary mt-3"> Masuk </button>
+					<button class="btn btn-primary mt-3" type="submit"> Masuk </button>
 				</div>
 			</form>
 		</div>
 	</section>
 </main>
+
+<dialog bind:this={dialogForget} class="bg-slate-50 text-slate-700 rounded">
+	<h2 class="font-bold text-l flex-none text-primary">LUPA PASSWORD?</h2>
+	<p class="text-sm">Silahkan mengisi username untuk me-reset password</p>
+	<form class="mt-3 text-slate-700" use:enhance={forgetHandler} method="POST" action="?/forget">
+		<!-- <label class="label text-sm w-fit" for="fdatepayment"
+			>Tanggal Pembayaran<span class="text-red-500">*</span></label
+		>
+		<input
+			class="input input-bordered w-full bg-slate-100"
+			type="date"
+			id="fdatepayment"
+			name="date"
+			max={formatDateYMD(today)}
+			bind:value={formValue[0]}
+		/> -->
+		<label class="label text-sm w-fit" for="fpengeluaran"
+			>Username<span class="text-red-500">*</span></label
+		>
+		<input
+			class="input input-bordered w-full bg-slate-100 mb-3"
+			type="text"
+			id="fpengeluaran"
+			name="username"
+			bind:value={forgetValue}
+		/>
+		<!-- <input
+			name="bill"
+			type="file"
+			accept=".jpeg, .jpg"
+			class="file-input file-input-bordered file-input-md w-full rounded bg-slate-100"
+			bind:value={formValue[2]}
+		/> -->
+
+		<button class="btn btn-primary btn-sm mt-3"> Reset password </button>
+		<button class="btn btn-sm" on:click|preventDefault={dialogForget.close()}> Batal </button>
+		{#if errorMessage.show}
+			<div class="justify-start text-red-500 italic text-sm">{errorMessage.message}</div>
+		{/if}
+	</form>
+</dialog>
+
+<dialog bind:this={dialogSuccess} class="bg-slate-50 text-slate-700 rounded">
+	<h2 class="font-bold text-l flex-none text-primary">PASSWORD BERHASIL DIRESET</h2>
+	<p class="text-sm">Silahkan menghubungi Manajer untuk meminta password sementara</p>
+</dialog>

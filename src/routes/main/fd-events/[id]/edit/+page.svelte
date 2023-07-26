@@ -3,16 +3,19 @@
 	import { goto } from '$app/navigation';
 	import { setDialogue } from '$lib/Dialogue.svelte';
 	import { dialogueOpen, dialogueValue, navigationBlocked } from '$lib/dialogueStore';
+	import { formatDateYMD, formatTime } from '$lib/Functions';
 	import { showMessage } from '$lib/Message.svelte';
-	import type { SubmitFunction } from './$types';
+	import type { PageData, SubmitFunction } from './$types';
 
 	navigationBlocked.set(true);
+
+    export let data: PageData;
 
 	let errorMessage = {
 		show: false,
 		message: ''
 	};
-	let formValue = ['', '', '', '', '', '', '', ''];
+	let formValue = [formatDateYMD(data.event.event_date), formatTime(data.event.event_date), data.event.event_place, data.event.department, data.event.total_pax, '', '', ''];
 
 	const submitHandler: SubmitFunction = ({ cancel }) => {
 		errorMessage.show = false;
@@ -39,8 +42,8 @@
 		return async ({ result }) => {
 			if (result.type == 'success') {
 				navigationBlocked.set(false);
-				goto('../fd-events');
-				showMessage('Event Berhasil Ditambahkan!');
+				goto('../'+data.event.id+'/detail');
+				showMessage('Pesanan Berhasil Diubah!');
 			}
 
 			if (result.type == 'failure') {
@@ -69,7 +72,7 @@
 	};
 
 	function cancelHandler() {
-		setDialogue('Batal Tambah Event?', 'Data yang dimasukkan tidak akan disimpan');
+		setDialogue('Batal Edit Event?', 'Data yang dimasukkan tidak akan disimpan');
 		dialogueOpen.set(true);
 		let timeIn = setInterval(() => {
 			if (!$dialogueOpen) {
@@ -77,7 +80,7 @@
 				switch ($dialogueValue) {
 					case true: {
 						navigationBlocked.set(false);
-						goto('../fd-events');
+						goto('../'+data.event.id+'/detail');
 					}
 					case false: {
 						console.log('dialog batal cancel');
@@ -92,7 +95,7 @@
 	<section class="place-content-center w-full h-screen drop-shadow-2xl rounded p-5 text-slate-700">
 		<div class="w-full h-fit bg-slate-100 rounded p-5">
 			<h2 class="font-['Helvetica Neue'] font-black text-2xl text-primary">
-				PESANAN EVENT FOOD & DRINK
+				EDIT PESANAN EVENT FOOD & DRINK
 			</h2>
 			<p>Silahkan mengisi informasi event melalui form dibawah:</p>
 
@@ -199,7 +202,7 @@
 						<div class="flex-grow" />
 						<div class="card-actions justify-end px-3 py-2">
 							<button class="btn" on:click|preventDefault={cancelHandler}>Batal </button>
-							<button class="btn btn-primary">Tambah </button>
+							<button class="btn btn-primary">EDIT </button>
 						</div>
 					</div>
 				</div>

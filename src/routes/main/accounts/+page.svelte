@@ -149,11 +149,11 @@
 		// }, 200);
 	}
 
-	function createPassword(staff: any): string {
-		const nameArr = staff.name.split(' ');
-		const birthDate = new Date(staff.birth_date);
-		return nameArr[0]+birthDate.getFullYear();
-	}
+	// function createPassword(staff: any): string {
+	// 	const nameArr = staff.name.split(' ');
+	// 	const birthDate = new Date(staff.birth_date);
+	// 	return nameArr[0]+birthDate.getFullYear();
+	// }
 </script>
 
 <main class="mx-auto h-screen flex flex-col bg-slate-100 p-5">
@@ -236,9 +236,9 @@
 							<tr>
 								<td class="text-center text-ml"
 									><div class="font-bold ">{user.username}</div>
-									{#if !user.last_login}
+									{#if user.status === 'Tidak Aktif'}
 										<span class="badge badge-secondary badge-sm"
-											>password: {createPassword(user.staff)}</span
+											>password: {user.password_hint}</span
 										>
 									{/if}
 								</td>
@@ -255,7 +255,7 @@
 									<div class="dropdown dropdown-end">
 										<button
 											class="btn btn-xs btn-ghost gap-2 btn-outline"
-											disabled={data.user.username === user.username}
+											disabled={data.user.username === user.username || user.status === 'Tidak Aktif' || user.staff.is_blocked}
 											>Ubah Status<svg
 												xmlns="http://www.w3.org/2000/svg"
 												fill="grey"
@@ -286,8 +286,10 @@
 							<tr>
 								<td class="text-center text-ml"
 									><div class="font-bold">{user.username}</div>
-									{#if !user.last_login}
-										<span class="badge badge-warning badge-sm">password: {createPassword(user.staff)}</span>
+									{#if user.status === 'Tidak Aktif'}
+										<span class="badge badge-secondary badge-sm"
+											>password: {user.password_hint}</span
+										>
 									{/if}
 								</td>
 								<td class="text-center">
@@ -303,7 +305,7 @@
 									<div class="dropdown dropdown-end">
 										<button
 											class="btn btn-xs btn-ghost gap-2 btn-outline"
-											disabled={data.user.username === user.username}
+											disabled={data.user.username === user.username || user.status === 'Tidak Aktif' || user.staff.is_blocked}
 											>Ubah Status
 											<svg
 												xmlns="http://www.w3.org/2000/svg"

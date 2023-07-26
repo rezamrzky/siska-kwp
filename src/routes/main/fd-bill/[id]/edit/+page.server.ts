@@ -3,7 +3,7 @@ import type { PageServerLoad } from "./$types";
 import { fail, type Actions } from "@sveltejs/kit";
 
 let iBill: (fd_bill & { fd_event: fd_event[]; }) | null;
-let iUser, iEvents;
+let iUser, iEvents: any[];
 const now = new Date()
 
 export const load: PageServerLoad = async ({ cookies, params: { id } }) => {
@@ -49,7 +49,7 @@ export const load: PageServerLoad = async ({ cookies, params: { id } }) => {
                     bill_id: null
                 },
                 {
-                    bill_id: iBill.id
+                    bill_id: iBill!.id
                 }
             ],
         }
@@ -80,7 +80,7 @@ export const actions: Actions = {
             const eventId = iEvents.findIndex(event => event.id === +eventsIndex[i]);
             const event = JSON.parse(JSON.stringify(iEvents[eventId]));
             total_before_tax = +event.total_price + total_before_tax;
-            const isListed = iBill.fd_event.filter(event => event.id === +eventsIndex[i]);
+            const isListed = iBill!.fd_event.filter(event => event.id === +eventsIndex[i]);
             if (!isListed[0]) {
                 console.log('Ketemu event baru!' + eventsIndex[i])
                 try {
@@ -89,7 +89,7 @@ export const actions: Actions = {
                             id: +eventsIndex[i]
                         },
                         data:{
-                            bill_id: iBill.id
+                            bill_id: iBill!.id
                         }
                     })
                 } catch (error) {
@@ -98,14 +98,14 @@ export const actions: Actions = {
             }
         }
 
-        for (let i = 0; i < iBill.fd_event.length; i++) {
-            const isListed = eventsIndex.findIndex(value => value === String(iBill.fd_event[i].id));
+        for (let i = 0; i < iBill!.fd_event.length; i++) {
+            const isListed = eventsIndex.findIndex(value => value === String(iBill!.fd_event[i].id));
             if (isListed === -1) {
-                console.log('Ketemu event yang dihapus!' + iBill.fd_event[i].id)
+                console.log('Ketemu event yang dihapus!' + iBill!.fd_event[i].id)
                 try {
                     await prisma.fd_event.update({
                         where:{
-                            id: iBill.fd_event[i].id
+                            id: iBill!.fd_event[i].id
                         },
                         data:{
                             bill_id: null
@@ -128,7 +128,7 @@ export const actions: Actions = {
         try {
          await prisma.fd_bill.update({
             where:{
-                id: iBill.id
+                id: iBill!.id
             },
             data:{
               date: date,

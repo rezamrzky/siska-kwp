@@ -34,7 +34,8 @@ export const actions: Actions = {
             const staffIndex = initialStaffs.findIndex(staff => staff.id === staffArray[i])
             const staff = JSON.parse(JSON.stringify(initialStaffs[staffIndex]))
             const username = await createUsername(staff)
-            const password = await createPassword(staff)
+            const password_hint = await createPassword(staff)
+            const password = await bcrypt.hash(password_hint, 10)
             // console.log('staff: ' + initialStaffs[staffIndex].name);
             // console.log('username: '+username)
             // console.log('password: '+password)
@@ -43,7 +44,7 @@ export const actions: Actions = {
             try{
                 await prisma.user.create({
                 data:{
-                    username, password, status, staff_id
+                    username, password, status, staff_id, password_hint
                 }
                 })
             } catch (err) {
@@ -120,6 +121,6 @@ async function createPassword(staff: staff): Promise<string> {
     const birthDate = new Date(staff.birth_date);
     const char = nameArr[0]+String(birthDate.getFullYear());
 
-  const hashResult = await bcrypt.hash(char, 10);
-  return hashResult;
+//   const hashResult = await bcrypt.hash(char, 10);
+  return char;
 }

@@ -5,9 +5,8 @@ import type { staff } from "@prisma/client";
 
 let user: { staff: staff; } | null;
 
-export const load: PageServerLoad = async ({cookies}) => {
+export const load: PageServerLoad = async ({cookies, params}) => {
     const session = String(cookies.get('session'));
-
     try {
         user = await prisma.user.findFirst({
             where:{
@@ -20,36 +19,39 @@ export const load: PageServerLoad = async ({cookies}) => {
     } catch (error) {
         return fail(500, {message: 'Gagal mengambil data!'})
     }
+
+    const event = await prisma.fd_event.findFirst({
+        where:{
+            id: +params.id
+        }
+    })
+
+    return {event: JSON.parse(JSON.stringify(event))}
 };
 
 export const actions: Actions = {
-    add:async ({request}) => {
+    add:async ({request, params}) => {
         const formData = await request.formData()
 
         const event_date = new Date(String(formData.get('event_date')));
         const temp_time = String(formData.get('event_time'));
         const department = String(formData.get('department'));
         const event_place = String(formData.get('event_place'));
-        // const purpose = String(formData.get('purpose'));
-        // const vendor = String(formData.get('vendor'));
         const total_pax = String(formData.get('total_pax'));
-        // const tempTotalPrice = String(formData.get('total_price'));
-        // const total_price = parseFloat(tempTotalPrice);
-        const status = 'Pemesanan';
-        const staff_id = user!.staff.id;
-        const created_at = new Date();
 
         const [ hours, minutes] = temp_time.split(':');
         event_date.setHours(Number(hours));
         event_date.setMinutes(Number(minutes));
-        // const event_time = date.toLocaleTimeString('id-ID', {hour12: false});
         console.log('event_date: '+event_date)
 
 
         try {
-            await prisma.fd_event.create({
+            await prisma.fd_event.update({
+                where:{
+                    id: +params.id
+                },
                 data:{
-                    event_date, event_place, department, total_pax, status, staff_id, created_at
+                    event_date, event_place, department, total_pax,
                 }
             })
             

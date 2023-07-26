@@ -30,7 +30,7 @@
 			<tbody class="text-slate-200">
 				<!-- row -->
 				{#each stocks as stock}
-                {#each Array(100) as _}
+                <!-- {#each Array(100) as _} -->
 				<tr class="bg-slate-100">
 					<td class="text-center">{number3DigitFormat(stock.id)}</td>
 					<td class="text-center">{stock.dr_ingredient.name}</td>
@@ -41,10 +41,10 @@
                     {#if stock.action === 1}
 					<td class="text-center text-success font-semibold"> Masuk</td>
                     {:else if stock.action === -1}
-                    <td class="text-center text-warning font-semibold"> Masuk</td>
+                    <td class="text-center text-warning font-semibold"> Keluar</td>
                     {/if}
 				</tr>
-                {/each}
+                <!-- {/each} -->
 				{/each}
 			</tbody>
 		</table>

@@ -5,7 +5,7 @@
 	import { goto, invalidateAll } from '$app/navigation';
 	import { showMessage } from '$lib/Message.svelte';
 	import type { PageData } from './$types';
-	import { currencyToString, formatDate, number3DigitFormat } from '$lib/Functions';
+	import { currencyToString, formatDate, formatDateYMD, number3DigitFormat } from '$lib/Functions';
 	import { enhance, type SubmitFunction } from '$app/forms';
 	import type { fd_bill_payment } from '@prisma/client';
 	import { null_to_empty } from 'svelte/internal';
@@ -14,6 +14,13 @@
 	$: ({ bill } = data);
 
 	let piutang = data.bill.total_after_tax
+	let dialogEditPayment: any;
+
+	let editPayment = {
+		id: '',
+		date: '',
+		total: ''
+	}
 
 	let payment: fd_bill_payment[] | null = data.bill.fd_bill_payment;
 	console.log('payment_length: '+payment?.length)
@@ -29,24 +36,24 @@
 
 	$: disabled = isPaidOff;
 
-	function deleteHandler() {
-		setDialogue('Hapus Tagihan', 'Apakah Anda Yakin Menghapus Tagihan?');
-		dialogueOpen.set(true);
-		let timeIn = setInterval(() => {
-			if (!$dialogueOpen) {
-				clearInterval(timeIn);
-				switch ($dialogueValue) {
-					case true: {
-						goto('../fd-bill');
-						showMessage('Tagihan Berhasil Dihapus!');
-					}
-					case false: {
-						console.log('dialog batal cancel');
-					}
-				}
-			}
-		}, 200);
-	}
+	// function deleteHandler() {
+	// 	setDialogue('Hapus Tagihan', 'Apakah Anda Yakin Menghapus Tagihan?');
+	// 	dialogueOpen.set(true);
+	// 	let timeIn = setInterval(() => {
+	// 		if (!$dialogueOpen) {
+	// 			clearInterval(timeIn);
+	// 			switch ($dialogueValue) {
+	// 				case true: {
+	// 					goto('../fd-bill');
+	// 					showMessage('Tagihan Berhasil Dihapus!');
+	// 				}
+	// 				case false: {
+	// 					console.log('dialog batal cancel');
+	// 				}
+	// 			}
+	// 		}
+	// 	}, 200);
+	// }
 
 	function editHandler() {
 		goto('./edit');
@@ -55,31 +62,31 @@
 	var date: string = '';
 	var paymentValue = '';
 
-	function submitHandler() {
-		errorMessage.show = false;
+	// function submitHandler() {
+	// 	errorMessage.show = false;
 
-		if (date === '' || paymentValue === '') {
-			errorMessage.show = true;
-			errorMessage.message = 'Terdapat form yang belum diisi!';
-		} else {
-			setDialogue('Konfirmasi Pembayaran?', 'Apakah Anda Yakin Konfirmasi Pembayaran?');
-			dialogueOpen.set(true);
-			let timeIn = setInterval(() => {
-				if (!$dialogueOpen) {
-					clearInterval(timeIn);
-					switch ($dialogueValue) {
-						case true: {
-							isPaidOff = true;
-							showMessage('Pembayaran Berhasil Ditambahkan!');
-						}
-						case false: {
-							console.log('dialog batal cancel');
-						}
-					}
-				}
-			}, 200);
-		}
-	}
+	// 	if (date === '' || paymentValue === '') {
+	// 		errorMessage.show = true;
+	// 		errorMessage.message = 'Terdapat form yang belum diisi!';
+	// 	} else {
+	// 		setDialogue('Konfirmasi Pembayaran?', 'Apakah Anda Yakin Konfirmasi Pembayaran?');
+	// 		dialogueOpen.set(true);
+	// 		let timeIn = setInterval(() => {
+	// 			if (!$dialogueOpen) {
+	// 				clearInterval(timeIn);
+	// 				switch ($dialogueValue) {
+	// 					case true: {
+	// 						isPaidOff = true;
+	// 						showMessage('Pembayaran Berhasil Ditambahkan!');
+	// 					}
+	// 					case false: {
+	// 						console.log('dialog batal cancel');
+	// 					}
+	// 				}
+	// 			}
+	// 		}, 200);
+	// 	}
+	// }
 
 	function cancelHandler() {
 		setDialogue('Batal Konfirmasi Pembayaran?', 'Data yang dimasukkan tidak akan disimpan');
@@ -120,14 +127,14 @@
 		};
 	};
 
-	const disapprovedHandle: SubmitFunction = () => {
-		return async ({ result }) => {
-			if (result.type === 'success') {
-				showMessage('Berhasil menolak tagihan!');
-				window.location.reload();
-			}
-		};
-	};
+	// const disapprovedHandle: SubmitFunction = () => {
+	// 	return async ({ result }) => {
+	// 		if (result.type === 'success') {
+	// 			showMessage('Berhasil menolak tagihan!');
+	// 			window.location.reload();
+	// 		}
+	// 	};
+	// };
 
 	function kreditCheck(): number{
 		let sisa = piutang;
@@ -135,6 +142,16 @@
 		sisa = +sisa - +payment![i].total
 		}
 		return sisa;
+	}
+
+	function editPaymentHandler(payment: any){
+
+		editPayment = {
+			id: payment.id,
+			date: formatDateYMD(payment.date),
+			total: payment.total
+		}
+		dialogEditPayment.showModal()
 	}
 </script>
 
@@ -242,6 +259,7 @@
 										<th>Tanggal</th>
 										<th>Total</th>
 										<th>Ekonomi</th>
+									<th />
 									</tr>
 								</thead>
 								<tbody class="text-slate-300">
@@ -250,6 +268,23 @@
 											<td>{formatDate(pay.date)}</td>
 											<td>{currencyToString(pay.total)}</td>
 											<td>{data.bill.staff.name}</td>
+											<td>{#if userDepartment === 'Ekonomi PWP'}
+
+												<form method="POST" action="?/delete_payment">
+												<input name="id" type="hidden" value={pay.id} />
+													<button
+														class="flex-none btn btn-outline btn-warning font-bold btn-xs btn-white"
+													>
+														Hapus</button
+													>
+												</form>
+													<button
+														class="flex-none btn btn-outline btn-secondary font-bold btn-xs btn-white mt-2"
+														on:click={() => editPaymentHandler(pay)}
+													>
+														Edit</button
+													>
+												{/if}</td>
 										</tr>
 									{/each}
 								</tbody>
@@ -257,6 +292,7 @@
 									<tr>
 										<td>Sisa</td>
 										<td>{currencyToString(kreditCheck())}</td>
+										<td />
 										<td />
 									</tr>
 								</tfoot>
@@ -322,7 +358,7 @@
 					<th>Nomor</th>
 					<th>Tanggal </th>
 					<th>Bagian</th>
-					<th>KEPERLUAN</th>
+					<!-- <th>KEPERLUAN</th> -->
 					<th>JUMLAH SEBELUM PAJAK</th>
 					<th />
 				</tr>
@@ -334,7 +370,7 @@
 							<td> {number3DigitFormat(event.id)} </td>
 							<td> {formatDate(event.event_date)} </td>
 							<td> {event.department}</td>
-							<td> {event.purpose} </td>
+							<!-- <td> {event.purpose} </td> -->
 							<td>{currencyToString(event.total_price)}</td>
 							<td>
 								<button
@@ -350,3 +386,40 @@
 		</table>
 	</div>
 </main>
+
+
+<dialog bind:this={dialogEditPayment} class="bg-slate-50 text-slate-700 rounded">
+	<h2 class="font-bold text-l flex-none text-primary">Edit Pembayaran</h2>
+	<form
+		class="mt-3 text-slate-700"
+		method="POST"
+		action="?/edit_payment"
+	>
+		<label class="label text-sm w-fit" for="fdatepayment"
+			>Tanggal Pembayaran<span class="text-red-500">*</span></label
+		>
+		<input
+			class="input input-bordered w-full bg-slate-100"
+			type="date"
+			id="fdatepayment"
+			name="vendor"
+			bind:value={editPayment.date}
+		/>
+		<label class="label text-sm w-fit" for="fpengeluaran"
+			>Total<span class="text-red-500">*</span></label
+		>
+		<input
+			class="input input-bordered w-full bg-slate-100 mb-3"
+			type="text"
+			id="fpengeluaran"
+			name="total"
+			bind:value={editPayment.total}
+		/>
+		<input name="id" type="hidden" value={editPayment.id} />
+		<button class="btn btn-primary btn-sm mt-3"> Edit </button>
+		<button class="btn btn-sm" on:click|preventDefault={dialogEditPayment.close()}> Batal </button>
+		{#if errorMessage.show}
+			<div class="justify-start text-red-500 italic text-sm">{errorMessage.message}</div>
+		{/if}
+	</form>
+</dialog>

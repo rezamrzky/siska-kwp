@@ -34,16 +34,20 @@
 	$: disabled = persetujuan;
 
 	let filteredMenu = data.menus[0];
-	let datePointer = new Date(data.period.lastYear, data.period.lastMonth);
+	let datePointer = new Date(data.period.firstYear, data.period.firstMonth);
 	let filteredDate = new Date(filteredMenu.date);
 	let pointerString = String(monthString[datePointer.getMonth()])+' '+String(datePointer.getFullYear())
-	dateFiltered();
 	// console.log(filteredMenu)
 	let listMonth: boolean[][] = new Array<boolean[]>(filteredDate.getDate());
 
-	const menuRecipe: string[][][] = new Array<string[][]>(filteredDate.getDate());
-	const menuShifts = filteredMenu.dr_menu_shift;
+	let menuRecipe: string[][][] = new Array<string[][]>(filteredDate.getDate());
+	let menuShifts = filteredMenu.dr_menu_shift;
 
+	dateFiltered();
+	// test();
+
+
+	function test(){
 	for (let d = 0; d < filteredDate.getDate(); d++) {
 		menuRecipe[d] = new Array<string[]>(2);
 		listMonth[d] = new Array<boolean>(4);
@@ -67,6 +71,7 @@
 			}
 		}
 	}
+}
 
 	const lastDate = new Date(data.period.lastYear, data.period.lastMonth);
 	const firstDate = new Date(data.period.firstYear, data.period.firstMonth);
@@ -74,7 +79,8 @@
 	function dateFiltered() {
 		let prevReport;
 		// filteredBillsActive = billsActive;
-		filteredMenu = data.menus.find((report: any) => {
+		const menus = data.menus
+		filteredMenu = menus.find((report: any) => {
 			const date = new Date(report.date);
 			// console.log('bill month: '+date.getMonth())
 			// console.log(date.getMonth() === datePointer.getMonth())
@@ -85,9 +91,38 @@
 			);
 		});
 
+		console.log(filteredMenu)
+
 		filteredDate = new Date(filteredMenu.date);
 		pointerString = String(monthString[datePointer.getMonth()])+' '+String(datePointer.getFullYear())
 
+		menuRecipe = new Array<string[][]>(filteredDate.getDate());
+		menuShifts = filteredMenu.dr_menu_shift;
+		test()
+
+	// 	for (let d = 0; d < filteredDate.getDate(); d++) {
+	// 	menuRecipe[d] = new Array<string[]>(2);
+	// 	listMonth[d] = new Array<boolean>(4);
+	// 	for (let s = 0; s < 2; s++) {
+	// 		const menuShift = menuShifts.find(
+	// 			(shift: any) => shift.day === d + 1 && shift.shift_cat === s + 1
+	// 		);
+	// 		menuRecipe[d][s] = new Array<string>(5);
+	// 			listMonth[d][s+1] = menuShift.is_approved;
+	// 		if (menuShift.dr_menu_shift_recipes.length > 0) {
+	// 			for (let r = 0; r < 5; r++) {
+	// 				const recipeId = menuShift.dr_menu_shift_recipes.find(
+	// 					(recipe: any) => recipe.index === r
+	// 				);
+	// 				if (recipeId) {
+	// 					const recipe = data.recipes.find((recipe: any) => recipe.id === recipeId.recipe_id);
+	// 					menuRecipe[d][s][r] = recipe.name + '-' + String(number3DigitFormat(recipe.id));
+	// 					console.log(menuRecipe[d][s][r]);
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
 		
 	}
 
@@ -200,7 +235,7 @@
 			<button
 				class="btn btn-outline font-bold btn-sm btn-primary"
 				type="button"
-				disabled={datePointer.getTime() === firstDate.getTime()}
+				disabled={datePointer.getTime() === lastDate.getTime()}
 				on:click={prevDatePointer}
 			>
 				&#8249;</button
@@ -214,7 +249,7 @@
 			<button
 				class="btn btn-outline font-bold btn-sm btn-primary ml-2"
 				type="button"
-				disabled={datePointer.getTime() === lastDate.getTime()}
+				disabled={datePointer.getTime() === firstDate.getTime()}
 				on:click={nextDatePointer}
 			>
 				&#8250;</button

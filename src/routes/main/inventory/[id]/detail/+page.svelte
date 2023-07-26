@@ -3,7 +3,7 @@
 	import { dialogueOpen, dialogueValue } from '$lib/dialogueStore';
 	import { showMessage } from '$lib/Message.svelte';
 	import { goto } from '$app/navigation';
-	import type { PageData } from './$types';
+	import type { PageData, SubmitFunction } from './$types';
 	import { formatDate, number3DigitFormat } from '$lib/Functions';
 
 	export let data: PageData;
@@ -15,7 +15,7 @@
 		goto('./edit')
 	}
 
-	function hapusProdukHandler() {
+	const hapusProdukHandler:SubmitFunction = () => {
 		setDialogue('Hapus Produk?', 'Apakah Anda Yakin Menghapus Produk Ini?');
 		dialogueOpen.set(true);
 		let timeIn = setInterval(() => {
@@ -31,6 +31,13 @@
 				}
 			}
 		}, 200);
+
+		return async ({ result }) => {
+			if (result.type === 'success') {
+				window.location.reload()
+				showMessage('Produk Telah Dihapus!');
+			}
+		};
 	}
 </script>
 
@@ -79,6 +86,7 @@
 			<tbody class="text-slate-200">
 				<!-- row -->
 				{#each data.ingredient.dr_ingredient_product as product}
+				{#if !product.is_blocked}
 					<tr>
 						<td class="text-center"> {number3DigitFormat(product.id)} </td>
 						<td class="text-center"> <b>{product.brand}</b>, {product.quantity} {data.ingredient.unit}</td>
@@ -92,13 +100,27 @@
 									class="flex-none btn btn-outline font-bold btn-xs btn-white"
 									on:click={() => goto('./product/'+product.id+'/edit')}>&#9998; edit</button
 								>
+								<form method="post" action="?/delete">
+								<input name="id" type="hidden" value={product.id} />
 								<button
 									class="flex-none btn btn-outline font-bold btn-xs btn-warning"
-									on:click={hapusProdukHandler}>&#9746; hapus</button
+									type="submit">&#9746; blok</button
 								>
+							</form>
 							</td>
 						{/if}
 					</tr>
+					{:else}
+					<tr class="text-warning">
+						<td class="text-center"> {number3DigitFormat(product.id)} </td>
+						<td class="text-center"> <b>{product.brand}</b>, {product.quantity} {data.ingredient.unit}</td>
+						<td class="text-right">{product.stock}</td>
+						<td class="text-center">{product.product_unit}</td>
+						<!-- <td class="text-left">{data.ingredient.unit}</td> -->
+						<td class="text-center">{formatDate(product.stock_date)}</td>
+						<td><b>BLOCKED</b></td>
+					</tr>
+					{/if}
 				{/each}
 			</tbody>
 		</table>
@@ -134,7 +156,7 @@
 						<td class="text-right">{stock.quantity}</td>
 						<td class="text-left">{stock.dr_ingredient_product.product_unit}</td>
 						<td class="text-center"> {formatDate(stock.date)} </td>
-						<td class="text-center text-success font-semibold"> {stock.action === 1? 'MASUK':'KELUAR'} </td>
+						<td class="text-center {stock.action === 1? 'text-success':'text-warning'} font-semibold"> {stock.action === 1? 'MASUK':'KELUAR'} </td>
 					</tr>
 				{/each}
 			</tbody>

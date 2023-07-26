@@ -24,7 +24,7 @@
 
 		return async ({ result }) => {
 			if (result.type === 'success') {
-				// goto('../');
+				goto('/');
 			}
 			if (result.type === 'failure') {
 				showMessage(result.data?.message!);

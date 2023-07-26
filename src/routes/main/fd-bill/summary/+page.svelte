@@ -170,7 +170,7 @@
 			<tbody class="text-slate-300">
 				<!-- row -->
 				{#each filteredBillsActive as bill}
-				{#each Array(10) as _}
+				<!-- {#each Array(10) as _} -->
 					<tr class="text-center" on:click={() => fetch('main/events/detail')}>
 						<td> {number3DigitFormat(bill.id)} </td>
 						<td> {formatDate(bill.date)} </td>
@@ -185,7 +185,7 @@
 							>
 						</td>
 					</tr>
-					{/each}
+					<!-- {/each} -->
 				{/each}
 			</tbody>
 			<tfoot class="sticky bottom-0 text-slate-100">
@@ -220,7 +220,7 @@
 			<tbody class="text-slate-300">
 				<!-- row -->
 				{#each filteredBillsPayment as payment}
-				{#each Array(20) as _}
+				<!-- {#each Array(20) as _} -->
 					<tr class="text-center" on:click={() => fetch('main/events/detail')}>
 						<td> {number3DigitFormat(payment.id)} </td>
 						<td> {formatDate(payment.fd_bill_payment[0].date)} </td>
@@ -238,7 +238,7 @@
 							>
 						</td>
 					</tr>
-					{/each}
+					<!-- {/each} -->
 				{/each}
 			</tbody>
 			<tfoot class="sticky bottom-0 text-slate-100">

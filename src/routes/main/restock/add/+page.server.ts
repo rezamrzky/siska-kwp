@@ -27,6 +27,9 @@ export const load: PageServerLoad = async ({ cookies }) => {
     })
 
     products = await prisma.dr_ingredient_product.findMany({
+        where:{
+                is_blocked: null
+        },
         orderBy:{
             brand: 'asc'
         },

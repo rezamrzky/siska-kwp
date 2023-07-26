@@ -45,7 +45,17 @@ export const actions: Actions = {
     const date = new Date(tempDate)
     const productQty = formData.getAll('quantity');
 
-    const idList: Array<dr_stock> = [];
+    interface item {
+      date: Date,
+      product_id: number,
+      ingredient_id: number,
+      quantity: Prisma.Decimal,
+      action: -1
+    }
+
+    const idList: Array<item> = [];
+
+    console.log("KOOK GAK JALAN INI")
 
     for (let i = 0; i < productQty.length; i++) {
       if (productQty[i] !== '') {
@@ -54,8 +64,7 @@ export const actions: Actions = {
           product_id: products[i].id,
           ingredient_id: products[i].dr_ingredient.id,
           quantity: new Prisma.Decimal(+productQty[i]),
-          action: -1,
-          id: 0
+          action: -1
         })
       }
     }
@@ -63,6 +72,7 @@ export const actions: Actions = {
     try {
       await prisma.dr_stock.createMany({ data: idList })
     } catch (error) {
+      console.log(error)
       return fail(500, { message: 'Gagal membuat restock!' })
     }
 

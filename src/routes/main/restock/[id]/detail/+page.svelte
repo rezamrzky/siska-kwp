@@ -14,12 +14,20 @@
 	$: ({bill} = data);
 	$: ({payment} = data);
 
+	let errorMessage = {
+		show: false,
+		message: ''
+	};
+
 	const today = new Date();
 	let dialog:any, dialog2:any;
 
 	let userDepartment = data.user.staff.department;
 
 	let status = data.restock.status;
+
+	let dialogEditOrder: any;
+	let dialogEditPayment: any;
 
 	let listPembelian = new Array<number>(data.products.length)
 
@@ -32,6 +40,20 @@
 		cost: '',
 		file: ''
 	};
+
+	let editOrder = {
+		id: '',
+		date: '',
+		total: '',
+		proof: ''
+	}
+
+	let editPayment = {
+		id: '',
+		date: '',
+		total: '',
+		proof: ''
+	}
 
 	let formPembayaran = {
 		date: '',
@@ -312,6 +334,92 @@
 			}
 		}
 	}
+
+	function editOrderHandler(){
+		editOrder.id = bill.id;
+		editOrder.date = formatDateYMD(bill.date)
+		editOrder.total = bill.total
+		editOrder.proof = bill.proof
+		dialogEditOrder.showModal()
+	}
+
+	const editOrderSubmit: SubmitFunction = ({ cancel }) => {
+		errorMessage.show = false;
+
+		if (editOrder.date === '' || editOrder.total === '') {
+			cancel();
+			errorMessage.show = true;
+			errorMessage.message = 'Terdapat form yang belum diisi!';
+		}
+
+		return async ({ result }) => {
+			if (result.type === 'success') {
+				showMessage('Berhasil mengubah pemesanan!');
+				window.location.reload();
+			}
+		};
+		// else {
+		// 	setDialogue('Tambah Event?', 'Apakah Anda Yakin menambahkan event baru?');
+		// 	dialogueOpen.set(true);
+		// 	let timeIn = setInterval(() => {
+		// 		if (!$dialogueOpen) {
+		// 			clearInterval(timeIn);
+		// 			switch ($dialogueValue) {
+		// 				case true: {
+		// 					goto('../events');
+		// 					showMessage('Event Berhasil Ditambahkan!');
+		// 				}
+		// 				case false: {
+		// 					console.log('dialog batal cancel');
+		// 				}
+		// 			}
+		// 		}
+		// 	}, 200);
+		// }
+	};
+
+	function editPaymentHandler(){
+		editPayment.id = bill.id;
+		editPayment.date = formatDateYMD(bill.date)
+		editPayment.total = bill.total
+		editPayment.proof = bill.proof
+		dialogEditPayment.showModal()
+	}
+
+	const editPaymentSubmit: SubmitFunction = ({ cancel }) => {
+		errorMessage.show = false;
+
+		if (editPayment.date === '' || editPayment.total === '') {
+			cancel();
+			errorMessage.show = true;
+			errorMessage.message = 'Terdapat form yang belum diisi!';
+		}
+
+		return async ({ result }) => {
+			if (result.type === 'success') {
+				showMessage('Berhasil mengubah pembayaran!');
+				window.location.reload();
+			}
+		};
+		// else {
+		// 	setDialogue('Tambah Event?', 'Apakah Anda Yakin menambahkan event baru?');
+		// 	dialogueOpen.set(true);
+		// 	let timeIn = setInterval(() => {
+		// 		if (!$dialogueOpen) {
+		// 			clearInterval(timeIn);
+		// 			switch ($dialogueValue) {
+		// 				case true: {
+		// 					goto('../events');
+		// 					showMessage('Event Berhasil Ditambahkan!');
+		// 				}
+		// 				case false: {
+		// 					console.log('dialog batal cancel');
+		// 				}
+		// 			}
+		// 		}
+		// 	}, 200);
+		// }
+	};
 </script>
 
 <main class="h-screen w-full p-5 bg-slate-50 overflow-y-scroll">
@@ -469,7 +577,7 @@
 						<p class="grow text-right text-slate-500 text-sm">{message3}</p>
 					</div>
 
-					{#if userDepartment == 'Ekonomi PWP' && status == 'Pembelian' && restock.is_stock_confirmed}
+					{#if userDepartment == 'Ekonomi PWP' && status == 'Pembelian' && !restock.is_stock_confirmed}
 					<form method="POST" action="?/orderConfirm"  use:enhance={konfirmasiPembelianEkoHandler}>
 						<div class="text-slate-700">
 							<label class="label text-sm" for="fdatepayment">Tanggal Pembelian</label>
@@ -510,7 +618,7 @@
 							{/if}
 						</div>
 						</form>
-					{:else if userDepartment == 'Dining Room' && status == 'Pembelian' && !restock.is_stock_confirmed}
+					{:else if userDepartment == 'Dining Room' && status == 'Pembelian' && restock.is_stock_confirmed}
 					<form method="POST" action="?/productConfirm"  use:enhance={konfirmasiPembelianDRHandler}>
 						<div class="overflow-x-auto max-h-[24rem]">
 							<table class="table w-full table-compact mt-5">
@@ -573,6 +681,14 @@
 								<p>{bill.staff.name}</p>
 							</div>
 						</div>
+						{#if status === 'Pembayaran' && userDepartment === 'Ekonomi PWP'}
+						<button class="btn btn-primary btn-outline btn-sm mt-3"
+						on:click={() => 
+						
+						editOrderHandler()}>
+							Edit
+						</button>
+						{/if}
 					{/if}
 				</div>
 
@@ -635,6 +751,14 @@
 								<p>{payment.staff.name}</p>
 							</div>
 						</div>
+						{#if status === 'Selesai' && userDepartment === 'Ekonomi PWP'}
+						<button class="btn btn-primary btn-outline btn-sm mt-3"
+						on:click={() => 
+						
+						editPaymentHandler()}>
+							Edit
+						</button>
+						{/if}
 					{/if}
 				</div>
 
@@ -671,4 +795,98 @@
 	<button class="link link-hover text-error text-end text-xl w-full" on:click={() => dialog2.close()}>&#9746;</button>
 	<!-- This is amazingly simple! (press esc to close) -->
 	<img src={data.url2} alt="proof-bill-pict"/>
+</dialog>
+
+<dialog bind:this={dialogEditOrder} class="bg-slate-50 text-slate-700 rounded">
+	<h2 class="font-bold text-l flex-none text-primary">Edit Pembayaran</h2>
+	<form
+		class="mt-3 text-slate-700"
+		method="POST"
+		action="?/edit_payment"
+		use:enhance={editOrderSubmit}
+	>
+		<label class="label text-sm w-fit" for="fdatepayment"
+			>Tanggal Pembayaran<span class="text-red-500">*</span></label
+		>
+		<input
+			class="input input-bordered w-full bg-slate-100"
+			type="date"
+			id="fdatepayment"
+			name="vendor"
+			bind:value={editOrder.date}
+		/>
+		<label class="label text-sm w-fit" for="fpengeluaran"
+			>Total<span class="text-red-500">*</span></label
+		>
+		<input
+			class="input input-bordered w-full bg-slate-100 mb-3"
+			type="text"
+			id="fpengeluaran"
+			name="total"
+			bind:value={editOrder.total}
+		/>
+		<label class="label text-sm w-fit" for="fpengeluaran"
+			>Bukti Pembayaran (Kosongkan jika tidak ingin diubah)</label
+		>
+		<input
+			name="bill"
+			type="file"
+			accept=".jpeg, .jpg"
+			class="file-input file-input-bordered file-input-md w-full rounded bg-slate-100"
+			bind:value={editOrder.proof}
+		/>
+		<input name="id" type="hidden" value={editOrder.id} />
+		<button class="btn btn-primary btn-sm mt-3"> Edit </button>
+		<button class="btn btn-sm" on:click|preventDefault={dialogEditOrder.close()}> Batal </button>
+		{#if errorMessage.show}
+			<div class="justify-start text-red-500 italic text-sm">{errorMessage.message}</div>
+		{/if}
+	</form>
+</dialog>
+
+<dialog bind:this={dialogEditPayment} class="bg-slate-50 text-slate-700 rounded">
+	<h2 class="font-bold text-l flex-none text-primary">Edit Pembayaran</h2>
+	<form
+		class="mt-3 text-slate-700"
+		method="POST"
+		action="?/editPayment"
+		use:enhance={editPaymentSubmit}
+	>
+		<label class="label text-sm w-fit" for="fdatepayment"
+			>Tanggal Pembayaran<span class="text-red-500">*</span></label
+		>
+		<input
+			class="input input-bordered w-full bg-slate-100"
+			type="date"
+			id="fdatepayment"
+			name="vendor"
+			bind:value={editPayment.date}
+		/>
+		<label class="label text-sm w-fit" for="fpengeluaran"
+			>Total<span class="text-red-500">*</span></label
+		>
+		<input
+			class="input input-bordered w-full bg-slate-100 mb-3"
+			type="text"
+			id="fpengeluaran"
+			name="total"
+			bind:value={editPayment.total}
+		/>
+		<label class="label text-sm w-fit" for="fpengeluaran"
+			>Bukti Pembayaran (Kosongkan jika tidak ingin diubah)</label
+		>
+		<input
+			name="bill"
+			type="file"
+			accept=".jpeg, .jpg"
+			class="file-input file-input-bordered file-input-md w-full rounded bg-slate-100"
+			bind:value={editPayment.proof}
+		/>
+		<input name="id" type="hidden" value={editPayment.id} />
+		<button class="btn btn-primary btn-sm mt-3"> Edit </button>
+		<button class="btn btn-sm" on:click|preventDefault={dialogEditPayment.close()}> Batal </button>
+		{#if errorMessage.show}
+			<div class="justify-start text-red-500 italic text-sm">{errorMessage.message}</div>
+		{/if}
+	</form>
 </dialog>

@@ -215,7 +215,7 @@
 					stroke-linejoin="round"
 					d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
 				/>
-			</svg>EVENT FOOD & DRINK
+			</svg>PESANAN FOOD & DRINK
 		</h1>
 		{#if userDepartment === 'Food & Drink'}
 			<button class="btn font-bold btn-sm btn-primary" on:click={tambahHandler}> + Tambah</button>
@@ -289,12 +289,12 @@
 					<th on:click={() => sort('event_date')}>Tanggal {headSymbol.event_date} </th>
 					<th>Bagian</th>
 					{#if data.user.staff.department === 'Food & Drink'}
-					<th>KEPERLUAN</th>
+					<!-- <th>KEPERLUAN</th> -->
 					{:else if data.user.staff.department === 'Manajer' || data.user.staff.department === 'Ekonomi PWP'}
 					<th>Admin</th>
 					{/if}
 					<th>Status</th>
-					<th>Vendor</th>
+					<th>Porsi</th>
 					<th />
 				</tr>
 			</thead>
@@ -311,12 +311,12 @@
 						<td> {formatDate(event.event_date)} </td>
 						<td> {event.department} </td>
 						{#if data.user.staff.department === 'Food & Drink'}
-						<td> {event.purpose} </td>
+						<!-- <td> {event.purpose} </td> -->
 						{:else if data.user.staff.department === 'Manajer' || data.user.staff.department === 'Ekonomi PWP'}
 						<td> {event.staff.name} </td>
 						{/if}
 						<td class='{statusColor(event.status)} font-semibold'>{event.status}</td>
-						<td><b>{event.vendor}</b>, {event.total_pax} porsi</td>
+						<td>{event.total_pax} porsi</td>
 						<td>
 							<button
 								class="flex-none btn btn-outline font-bold btn-xs btn-white"

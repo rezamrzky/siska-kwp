@@ -90,5 +90,48 @@ export const actions: Actions = {
             type: 'success',
             status: 201
         }
+    },
+
+    forget: async ({ request }) => {
+        const formData = await request.formData()
+
+        const username = String(formData.get('username'))
+        console.log('username: ' + username)
+
+        const password_hint = await createPassword()
+        const password = await bcrypt.hash(password_hint, 10)
+
+        try {
+            await prisma.user.update({
+                where: {
+                    username
+                },
+                data: {
+                    status: 'Tidak Aktif',
+                    password, 
+                    password_hint
+                }
+            })
+        }
+        catch (error) {
+            return fail(400, { message: 'Gagal reset password' });
+        }
+
+        return {
+            type: 'success',
+            status: 201
+        }
     }
 } satisfies Actions;
+
+async function createPassword(): Promise<string> {
+    const char = '1234567890QWERTYUIOPASDFGHJKLZXCVBNM'
+    let randomString = "";
+  for (let i = 0; i < 6; i++) {
+    const randomCharacter = char.charAt(Math.floor(Math.random() * char.length));
+    randomString += randomCharacter;
+  }
+
+    // const hashResult = await bcrypt.hash(randomString, 10);
+    return randomString;
+}

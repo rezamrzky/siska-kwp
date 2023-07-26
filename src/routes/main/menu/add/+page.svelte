@@ -172,10 +172,10 @@
 			<button class="btn btn-outline font-bold btn-sm btn-error" on:click={cancelHandler} type="button"
 				>KELUAR</button
 			>
-			<button class="btn btn-outline font-bold btn-sm btn-primary ml-2" type="submit">SIMPAN</button
+			<button class="btn btn-outline font-bold btn-sm btn-primary ml-2" type="submit" disabled={data.nextMenu.is_submited}>SIMPAN</button
 			>
 			<form method="POST" action="?/submitted" use:enhance={submitHandler}>
-			<button class="btn font-bold btn-sm btn-primary ml-2" disabled={!is_full()}>AJUKAN</button>
+			<button class="btn font-bold btn-sm btn-primary ml-2" disabled={!is_full() || data.nextMenu.is_submited}>AJUKAN</button>
 		</form>
 		</div>
 		<div class="overflow-y-scroll w-full mt-2 text-slate-50 max-h-[42rem]">
@@ -202,6 +202,7 @@
 												class="select w-full select-sm select-bordered max-w-xs text-xs text-slate-300"
 												name="recipes-{String(d)}-{String(s)}"
 												value={menuRecipe[d][s][r] ? menuRecipe[d][s][r] : 'RESEP ' + String(r + 1)}
+												disabled={data.nextMenu.is_submited}
 											>
 												<option disabled selected>RESEP {r + 1}</option>
 												{#each recipes as recipe}

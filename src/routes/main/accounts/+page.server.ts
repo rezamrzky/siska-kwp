@@ -8,12 +8,14 @@ export const load: PageServerLoad = (async ({cookies}) => {
             password: true,
             last_login: true,
             status: true,
+            password_hint: true,
             staff: {
                 select: {
                     name: true,
                     department: true,
                     position: true,
-                    birth_date: true
+                    birth_date: true,
+                    is_blocked: true
                 }
             }
         }

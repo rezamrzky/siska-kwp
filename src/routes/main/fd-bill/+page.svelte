@@ -145,7 +145,7 @@
 					<th on:click={() => sort('date')}>Tanggal Tagihan {headSymbol.date} </th>
 					<th>Uraian</th>
 					<th>Status</th>
-					<th>Tanggal Bayar</th>
+					<!-- <th>Tanggal Bayar</th> -->
 					<th />
 				</tr>
 			</thead>
@@ -157,7 +157,7 @@
 						<td> {formatDate(bill.date)} </td>
 						<td> {bill.note} </td>
 						<td class="{statusColor(bill.status)} font-semibold">{bill.status}</td>
-						<td>99/99/9999</td>
+						<!-- <td>{bill.fd_bill_payment[0].confirm_date}</td> -->
 						<td>
 							<button
 								class="flex-none btn btn-outline font-bold btn-xs btn-white"

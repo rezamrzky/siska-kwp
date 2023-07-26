@@ -1,4 +1,5 @@
-import type { PageServerLoad } from "./$types";
+import { fail } from "@sveltejs/kit";
+import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ cookies, params: {id} }) => {
     // console.log(cookies.getAll())
@@ -44,3 +45,30 @@ export const load: PageServerLoad = async ({ cookies, params: {id} }) => {
 
     return { user: JSON.parse(JSON.stringify(user)), ingredient: JSON.parse(JSON.stringify(ingredients)) }
   };
+  
+
+  export const actions: Actions = {
+    delete:async ({request}) => {
+
+      const formData = await request.formData();
+
+      const id = String(formData.get("id"))
+
+      console.log("id-deleted_ingredient: "+id)
+
+        try {
+            await prisma.dr_ingredient_product.update({
+                where:{
+                  id: +id
+                },
+                data:{
+                  is_blocked: true
+                }
+            })
+        } catch (error) {
+            return fail(500, {message: 'gagal menambakan bahan baku'})
+        }
+
+        return {type: 'success'}
+    }
+};
